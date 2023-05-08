@@ -2,6 +2,9 @@ from PyQt5 import QtWidgets
 from PyQt5 import QtGui
 from PyQt5 import QtCore
 import os, subprocess, threading
+from PyQt5.QtWidgets import QDialog
+from PyQt5.QtWidgets import *
+import sys
 
 from ui import file
 
@@ -21,7 +24,7 @@ class Browser(file.Ui_MainWindow,QtWidgets.QMainWindow):
         #self.treeView.setSortingEnabled(True)
         self.treeView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.treeView.customContextMenuRequested.connect(self.context_menu)
-        self.treeView.doubleClicked.connect(self.open_file)
+        #self.treeView.doubleClicked.connect(self.open_file)
     
         
     def context_menu(self):
@@ -29,20 +32,27 @@ class Browser(file.Ui_MainWindow,QtWidgets.QMainWindow):
         open = menu.addAction("Open")
         open.triggered.connect(self.open_file)
 
-        git_init = menu.addAction("git_init")
-        git_init.triggered.connect(self.git_init)
-        git_add = menu.addAction("git_add")
-        git_add.triggered.connect(self.git_add)
-        git_restore = menu.addAction("git_restore")
-        git_restore.triggered.connect(self.git_restore)
-        git_restore_staged = menu.addAction("git_restore_staged")
-        git_restore_staged.triggered.connect(self.git_restore_staged)
-        git_rm_cached = menu.addAction("git_rm_cached")
-        git_rm_cached.triggered.connect(self.git_rm_cached)
-        git_rm = menu.addAction("git_rm")
-        git_rm.triggered.connect(self.git_rm)
-        #git_mv = menu.addAction("git_mv")
-        #git_mv.triggered.connect(self.git_mv)
+        index = self.treeView.currentIndex()
+        filepath = self.model.filePath(index)
+
+        if os.path.isfile(filepath):
+            git_add = menu.addAction("git_add")
+            git_add.triggered.connect(self.git_add)
+            git_restore = menu.addAction("git_restore")
+            git_restore.triggered.connect(self.git_restore)
+            git_restore_staged = menu.addAction("git_restore_staged")
+            git_restore_staged.triggered.connect(self.git_restore_staged)
+            git_rm_cached = menu.addAction("git_rm_cached")
+            git_rm_cached.triggered.connect(self.git_rm_cached)
+            git_rm = menu.addAction("git_rm")
+            git_rm.triggered.connect(self.git_rm)
+            git_mv = menu.addAction("git_mv")
+            git_mv.triggered.connect(self.git_mv)
+        
+
+        if os.path.isdir(filepath):
+            git_init = menu.addAction("git_init")
+            git_init.triggered.connect(self.git_init)
         #git_commit = menu.addAction("git_commit")
         #git_commit.triggered.connect(self.git_commit)
 
@@ -106,11 +116,46 @@ class Browser(file.Ui_MainWindow,QtWidgets.QMainWindow):
         Str = "git rm " + name
         os.system(Str)
 
-    #def git_mv(self):
+    def init_name_input(self):
+        self.dialog=QDialog()
+        btnDialog = QPushButton("OK", self.dialog)
+        btnDialog.move(150, 100)
+        btnDialog.clicked.connect(self.dialog_close)
+        laDialog = QLabel("change name", self.dialog)
+        laDialog.move(150,40)
+        nameInDialog = QLineEdit(self.dialog)
+        nameInDialog.move(180, 40)
+        nameInDialog.setPlaceholderText('change file name')
+        new_file_name = nameInDialog.text()
+    
+        self.dialog.setWindowTitle('change name')
+        self.dialog.setWindowModality(1)
+        self.dialog.resize(400,200)
+        self.dialog.show()
+        return new_file_name
+
+    def git_mv(self):
+        
+        new_file_name = self.init_name_input()
+        
+
+        
+        index = self.treeView.currentIndex()
+        filepath = self.model.filePath(index)
+        Ppath = os.path.abspath(os.path.join(filepath, os.pardir))
+        name = self.model.fileName(index)
+        os.chdir(Ppath)
+        Str = "git mv " + name.rstrip() + " " + new_file_name
+        self.do_git_mv(Str)
+        os.system(Str)
+
+    
+
+    def dialog_close(self):
+        self.dialog.close()
 
     #def git_commit(self):
 
-    
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication([])
