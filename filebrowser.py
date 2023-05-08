@@ -13,7 +13,7 @@ class Browser(file.Ui_MainWindow,QtWidgets.QMainWindow):
         super(Browser, self).__init__()
         self.setupUi(self)
         self.populate()
-        self.setWindowTitle("File Browser By SHADOW")
+        self.setWindowTitle("Git Scroll")
 
     def populate(self):
         path = "C:\Windows"
