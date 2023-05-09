@@ -53,14 +53,15 @@ class Browser(file.Ui_MainWindow,QtWidgets.QMainWindow):
         if os.path.isdir(filepath):
             git_init = menu.addAction("git_init")
             git_init.triggered.connect(self.git_init)
-        #git_commit = menu.addAction("git_commit")
-        #git_commit.triggered.connect(self.git_commit)
+            git_commit = menu.addAction("git_commit")
+            git_commit.triggered.connect(self.git_commit)
 
         cursor = QtGui.QCursor()
         menu.exec_(cursor.pos())
 
 
     def open_file(self):
+        
         index = self.treeView.currentIndex()
         filepath = self.model.filePath(index)
         os.startfile(filepath)
@@ -116,45 +117,82 @@ class Browser(file.Ui_MainWindow,QtWidgets.QMainWindow):
         Str = "git rm " + name
         os.system(Str)
 
-    def init_name_input(self):
-        self.dialog=QDialog()
-        btnDialog = QPushButton("OK", self.dialog)
-        btnDialog.move(150, 100)
-        btnDialog.clicked.connect(self.dialog_close)
-        laDialog = QLabel("change name", self.dialog)
-        laDialog.move(150,40)
-        nameInDialog = QLineEdit(self.dialog)
-        nameInDialog.move(180, 40)
-        nameInDialog.setPlaceholderText('change file name')
-        new_file_name = nameInDialog.text()
-    
-        self.dialog.setWindowTitle('change name')
-        self.dialog.setWindowModality(1)
-        self.dialog.resize(400,200)
-        self.dialog.show()
-        return new_file_name
+        
+
 
     def git_mv(self):
         
-        new_file_name = self.init_name_input()
-        
-
-        
+        self.new_window = ChangeName()
+        self.new_window.name_entered.connect(self.handle_name_entered)
+        self.new_window.show()
+    
+    def handle_name_entered(self, changed_name):
         index = self.treeView.currentIndex()
         filepath = self.model.filePath(index)
         Ppath = os.path.abspath(os.path.join(filepath, os.pardir))
         name = self.model.fileName(index)
         os.chdir(Ppath)
-        Str = "git mv " + name.rstrip() + " " + new_file_name
+        Str = "git mv " + name.rstrip() + " " + changed_name
         self.do_git_mv(Str)
         os.system(Str)
 
-    
+    def do_git_mv(self, Str):
+        os.system(Str)
+        print(Str)
 
     def dialog_close(self):
         self.dialog.close()
 
-    #def git_commit(self):
+    #파일 상태 추출
+    #git status --porcelain 파일경로
+    #스태이징 파일 목록 추출
+    #git diff --name-only --cached
+
+    def git_commit(self):
+        index = self.treeView.currentIndex()
+        filepath = self.model.filePath(index)
+        os.chdir(filepath)
+        command = "git diff --name-only --cached"
+        result = os.popen(command).read().strip()
+        
+        self.dialog=QDialog()
+
+        self.dialog.setWindowTitle('staged file list')
+        self.dialog.setWindowModality(1)
+        self.dialog.resize(400,200)
+        self.dialog.show()
+
+        staged_file = QLabel(result, self.dialog)
+        staged_file.move(50,50)
+
+
+class ChangeName(QWidget):
+    name_entered = QtCore.pyqtSignal(str)
+
+    def __init__(self):
+        super().__init__()
+
+        self.setWindowTitle("Change file name")
+        self.setGeometry(200, 200, 400, 300)
+
+        self.layout = QVBoxLayout()
+
+        self.label = QLabel("Change name:", self)
+        self.layout.addWidget(self.label)
+
+        self.line_edit = QLineEdit(self)
+        self.layout.addWidget(self.line_edit)
+
+        self.button = QPushButton("OK", self)
+        self.button.clicked.connect(self.emit_name_entered)
+        self.layout.addWidget(self.button)
+
+        self.setLayout(self.layout)
+
+    def emit_name_entered(self):
+        changed_name = self.line_edit.text()
+        self.name_entered.emit(changed_name)
+        self.close()
 
 
 if __name__ == "__main__":
