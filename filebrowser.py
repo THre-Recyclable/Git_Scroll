@@ -34,6 +34,7 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
         open.triggered.connect(self.open_file)
 
         index = self.treeView.currentIndex()
+        index = index.siblingAtColumn(1)
         filepath = self.model.filePath(index)
 
         if is_git_repository(filepath) and os.path.isfile(filepath):
