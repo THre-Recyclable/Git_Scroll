@@ -131,17 +131,104 @@ class Browser(file.Ui_MainWindow,QtWidgets.QMainWindow):
         Str = "git mv " + name.rstrip() + " " + changed_name
         os.system(Str)
 
-    
-    
-    #파일 상태 추출
-    #git status --porcelain 파일경로
-    #스태이징 파일 목록 추출
-    #git diff --name-only --cached
+     
 
     def git_commit(self):
+        self.file_list = QListWidget(self)
 
-        self.commitable_file = CommitFileList()
-        self.commitable_file.show()
+        index = self.treeView.currentIndex()
+        filepath = self.model.filePath(index)
+
+        commitable_files = self.get_commitable_files(filepath)
+        self.show_commitable_files(commitable_files)
+
+    def get_commitable_files(self, directory):
+        os.chdir(directory)
+        Str = "git status --porcelain"
+        result = os.popen(Str).read()
+        status_lines = result.split('\n')
+        commitable_files = []
+        for line in status_lines:
+            file_status = line[:2]
+            file_path = line[3:]
+            if file_status in ["A ", "M "]:
+                commitable_files.append(file_path)
+        return commitable_files
+
+
+    def show_commitable_files(self, commitable_files):
+        commitable_files_window = CommitableFileWindow(commitable_files, parent=self)
+        commitable_files_window.ok_clicked.connect(self.handle_ok_clicked)
+        commitable_files_window.show()
+
+    def handle_ok_clicked(self):
+        self.new_window = CommitMessageWindow()
+        self.new_window.message_entered.connect(self.handle_message_entered)
+        self.new_window.show()
+
+    def handle_message_entered(self, commit_message):
+        index = self.treeView.currentIndex()
+        filepath = self.model.filePath(index)
+        os.chdir(filepath)
+        Str = "git commit -m'" + commit_message +"'"
+        os.system(Str)
+
+class CommitableFileWindow(QDialog):
+    ok_clicked = QtCore.pyqtSignal(bool)
+    def __init__(self, commitable_files, parent=None):
+        super().__init__(parent)
+
+        self.setWindowTitle("Commitable Files")
+        self.setGeometry(100,100,400,300)
+
+        self.layout = QVBoxLayout()
+        
+        self.label = QLabel("Commitable Files : ", self)
+        self.layout.addWidget(self.label)
+        
+        file_list = QListWidget(self)
+        self.layout.addWidget(file_list)
+        for file_path in commitable_files:
+            list_item = QListWidgetItem(file_path)
+            file_list.addItem(list_item)
+
+        self.button = QPushButton("OK", self)
+        self.button.clicked.connect(self.open_get_commit_message)
+        self.layout.addWidget(self.button)
+
+        self.setLayout(self.layout)
+        
+    def open_get_commit_message(self):
+        self.ok_clicked.emit(True)
+        self.close()
+
+class CommitMessageWindow(QWidget):
+    message_entered = QtCore.pyqtSignal(str)
+    def __init__(self):
+        super().__init__()
+
+        self.setWindowTitle("Write Commit Message")
+        self.setGeometry(200,200,400,300)
+
+        self.layout = QVBoxLayout()
+        
+        self.label = QLabel("Write Commit Message: ", self)
+        self.layout.addWidget(self.label)
+
+        self.line_edit = QLineEdit(self)
+        self.layout.addWidget(self.line_edit)
+
+        self.button = QPushButton("OK", self)
+        self.button.clicked.connect(self.emit_message_entered)
+        self.layout.addWidget(self.button)
+
+        self.setLayout(self.layout)
+
+    def emit_message_entered(self):
+        commit_message = self.line_edit.text()
+        self.message_entered.emit(commit_message)
+        self.close()
+        
         
 
 class ChangeName(QWidget):
@@ -172,44 +259,7 @@ class ChangeName(QWidget):
         self.name_entered.emit(changed_name)
         self.close()
 
-class CommitFileList(QWidget):
-    def __init__(self):
-        super().__init__()
 
-        self.setWindowTitle("Commit file list")
-        self.setGeometry(200,200,400,300)
-
-        self.layout = QVBoxLayout()
-
-        self.label = QLabel("Commitable Files : ", self)
-        self.layout.addWidget(self.label)
-
-        self.file_list = QListWidget(self)
-        self.layout.addWidget(self.file_list)
-
-        self.commit_button = QPushButton("Commit", self)
-        self.commit_button.clicked.connect(self.refresh_status)
-        self.layout.addWidget(self.commit_button)
-
-        #self.setCentralWidget(self.file_list)
-        self.refresh_status()
-    def refresh_status(self):
-        self.file_list.clear()
-
-        git_status_output = subprocess.run(["git", "status", "--porcelain"], capture_output=True, text=True)
-        if git_status_output.returncode == 0:
-            status_lines = git_status_output.stdout.strip().split('\n')
-            for line in status_lines:
-                file_status = line[:2]
-                file_path = line[3:]
-                if file_status in ['A', 'M']:
-                    list_item = QListWidgetItem(file_path)
-                    self.file_list.addItem(list_item)
-        else:
-            error_message = git_status_output.stderr.strip()
-            print(f"Failed to retrieve Git status: {error_message}")
-
-#class CommitMessage(QWidget):
 
 
 if __name__ == "__main__":
