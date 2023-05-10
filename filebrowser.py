@@ -117,11 +117,7 @@ class Browser(file.Ui_MainWindow,QtWidgets.QMainWindow):
         Str = "git rm " + name
         os.system(Str)
 
-        
-
-
-    def git_mv(self):
-        
+    def git_mv(self):        
         self.new_window = ChangeName()
         self.new_window.name_entered.connect(self.handle_name_entered)
         self.new_window.show()
@@ -133,38 +129,20 @@ class Browser(file.Ui_MainWindow,QtWidgets.QMainWindow):
         name = self.model.fileName(index)
         os.chdir(Ppath)
         Str = "git mv " + name.rstrip() + " " + changed_name
-        self.do_git_mv(Str)
         os.system(Str)
 
-    def do_git_mv(self, Str):
-        os.system(Str)
-        print(Str)
-
-    def dialog_close(self):
-        self.dialog.close()
-
+    
+    
     #파일 상태 추출
     #git status --porcelain 파일경로
     #스태이징 파일 목록 추출
     #git diff --name-only --cached
 
     def git_commit(self):
-        index = self.treeView.currentIndex()
-        filepath = self.model.filePath(index)
-        os.chdir(filepath)
-        command = "git diff --name-only --cached"
-        result = os.popen(command).read().strip()
+
+        self.commitable_file = CommitFileList()
+        self.commitable_file.show()
         
-        self.dialog=QDialog()
-
-        self.dialog.setWindowTitle('staged file list')
-        self.dialog.setWindowModality(1)
-        self.dialog.resize(400,200)
-        self.dialog.show()
-
-        staged_file = QLabel(result, self.dialog)
-        staged_file.move(50,50)
-
 
 class ChangeName(QWidget):
     name_entered = QtCore.pyqtSignal(str)
@@ -193,6 +171,45 @@ class ChangeName(QWidget):
         changed_name = self.line_edit.text()
         self.name_entered.emit(changed_name)
         self.close()
+
+class CommitFileList(QWidget):
+    def __init__(self):
+        super().__init__()
+
+        self.setWindowTitle("Commit file list")
+        self.setGeometry(200,200,400,300)
+
+        self.layout = QVBoxLayout()
+
+        self.label = QLabel("Commitable Files : ", self)
+        self.layout.addWidget(self.label)
+
+        self.file_list = QListWidget(self)
+        self.layout.addWidget(self.file_list)
+
+        self.commit_button = QPushButton("Commit", self)
+        self.commit_button.clicked.connect(self.refresh_status)
+        self.layout.addWidget(self.commit_button)
+
+        #self.setCentralWidget(self.file_list)
+        self.refresh_status()
+    def refresh_status(self):
+        self.file_list.clear()
+
+        git_status_output = subprocess.run(["git", "status", "--porcelain"], capture_output=True, text=True)
+        if git_status_output.returncode == 0:
+            status_lines = git_status_output.stdout.strip().split('\n')
+            for line in status_lines:
+                file_status = line[:2]
+                file_path = line[3:]
+                if file_status in ['A', 'M']:
+                    list_item = QListWidgetItem(file_path)
+                    self.file_list.addItem(list_item)
+        else:
+            error_message = git_status_output.stderr.strip()
+            print(f"Failed to retrieve Git status: {error_message}")
+
+#class CommitMessage(QWidget):
 
 
 if __name__ == "__main__":
