@@ -2,7 +2,7 @@ import git
 import os
 
 status_cache = {}
-
+mtime_cache = {}
 
 def is_git_repository(path):
     try:
@@ -13,24 +13,29 @@ def is_git_repository(path):
 
 
 def get_status(file_path, get_status_again):
+    # executing every code below is inefficient, so we will use simple nested dictionary.
+    file_status = status_cache.get(file_path, 'unknown')
+    mtime = os.path.getmtime(file_path)
+    if file_status != 'unknown' and get_status_again is False:
+        # check if the file is modified
+        if mtime_cache[file_path] == mtime:
+            return file_status
+
     repo = git.Repo(file_path, search_parent_directories=True)
     relative_path = os.path.relpath(file_path, repo.working_tree_dir)
     # this is needed, because git uses '/' for directories but windows uses '\' for directories.
     relative_path = relative_path.replace('\\', '/')
 
-    # executing every code below is inefficient, so we will use simple nested dictionary.
-    repo_cache = status_cache.get(repo.working_tree_dir, {})
-    if relative_path in repo_cache and get_status_again is False:
-        return repo_cache[relative_path]
-
     # untracked check prior - the working directory would have untracked files.
     # because of the newly created file or 'git rm --cached'
     if relative_path in repo.untracked_files:
-        repo_cache[relative_path] = 'untracked'
+        status_cache[file_path] = 'untracked'
+        mtime_cache[file_path] = mtime
         return 'untracked'
     # if both modified and staged, modified should be prior.
     if relative_path in [item.a_path for item in repo.index.diff(None)]:
-        repo_cache[relative_path] = 'modified'
+        status_cache[file_path] = 'modified'
+        mtime_cache[file_path] = mtime
         return 'modified'
 
     # if it doesn't have any commit object, there is no diff('HEAD')
@@ -39,14 +44,17 @@ def get_status(file_path, get_status_again):
     if len(list(repo.branches)) == 0:
         staged_files = [item[0] for item in repo.index.entries]
         if relative_path in staged_files:
-            repo_cache[relative_path] = 'staged'
+            status_cache[file_path] = 'staged'
+            mtime_cache[file_path] = mtime
             return 'staged'
         else:
-            repo_cache[relative_path] = 'untracked'
+            status_cache[file_path] = 'untracked'
+            mtime_cache[file_path] = mtime
             return 'untracked'
 
     if relative_path in [item.a_path for item in repo.index.diff('HEAD')]:
-        repo_cache[relative_path] = 'staged'
+        status_cache[file_path] = 'staged'
+        mtime_cache[file_path] = mtime
         return 'staged'
 
     # this part is needed because of .gitignore.
@@ -58,8 +66,10 @@ def get_status(file_path, get_status_again):
     # we just need to check whether the file has been committed or not.
     try:
         latest_commit = next(repo.iter_commits(paths=relative_path, max_count=1))
-        repo_cache[relative_path] = 'committed'
+        status_cache[file_path] = 'committed'
+        mtime_cache[file_path] = mtime
         return 'committed'
     except StopIteration:
-        repo_cache[relative_path] = 'untracked'
+        status_cache[file_path] = 'untracked'
+        mtime_cache[file_path] = mtime
         return 'untracked'
