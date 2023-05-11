@@ -8,6 +8,7 @@ import sys
 
 from ui import file
 from status import *
+from gitfilestate import *
 
 
 class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
@@ -19,7 +20,7 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
 
     def populate(self):
         path = "C:\Windows"
-        self.model = QtWidgets.QFileSystemModel()
+        self.model = GitFileState()
         self.model.setRootPath(QtCore.QDir.rootPath())
         self.treeView.setModel(self.model)
         # self.treeView.setRootIndex(self.model.index(path))
