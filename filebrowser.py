@@ -39,7 +39,7 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
         filepath = self.model.filePath(index)
 
         if is_git_repository(filepath) and os.path.isfile(filepath):
-            file_stat = get_status(filepath)
+            file_stat = get_status(filepath, False)
 
             if file_stat == 'untracked':
                 git_add = menu.addAction("git_add")
@@ -91,6 +91,7 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
         os.chdir(Ppath)
         Str = "git add " + name
         os.system(Str)
+        get_status(filepath, True)
 
     def git_restore(self):
         index = self.treeView.currentIndex()
@@ -100,6 +101,7 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
         os.chdir(Ppath)
         Str = "git restore " + name
         os.system(Str)
+        get_status(filepath, True)
 
     def git_restore_staged(self):
         index = self.treeView.currentIndex()
@@ -109,6 +111,7 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
         os.chdir(Ppath)
         Str = "git restore --staged " + name
         os.system(Str)
+        get_status(filepath, True)
 
     def git_rm_cached(self):
         index = self.treeView.currentIndex()
@@ -118,6 +121,7 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
         os.chdir(Ppath)
         Str = "git rm --cached " + name
         os.system(Str)
+        get_status(filepath, True)
 
     def git_rm(self):
         index = self.treeView.currentIndex()
@@ -127,6 +131,7 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
         os.chdir(Ppath)
         Str = "git rm " + name
         os.system(Str)
+        get_status(filepath, True)
 
     def init_name_input(self):
         self.dialog = QDialog()
@@ -158,6 +163,7 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
         Str = "git mv " + name.rstrip() + " " + new_file_name
         self.do_git_mv(Str)
         os.system(Str)
+        get_status(filepath, True)
 
     def dialog_close(self):
         self.dialog.close()

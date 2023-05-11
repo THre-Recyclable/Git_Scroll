@@ -22,7 +22,7 @@ class GitFileState(QtWidgets.QFileSystemModel):
                 filepath = self.filePath(index)
 
                 if is_git_repository(filepath):
-                    file_status = get_status(filepath)
+                    file_status = get_status(filepath, False)
                 
                     return self.icons.get(file_status, super().data(index, role))
     
