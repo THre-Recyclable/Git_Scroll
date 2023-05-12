@@ -66,12 +66,14 @@ class Browser(file.Ui_MainWindow,QtWidgets.QMainWindow):
         filepath = self.model.filePath(index)
         os.startfile(filepath)
     
+    #git init
     def git_init(self):
         index = self.treeView.currentIndex()
         filepath = self.model.filePath(index)
         os.chdir(filepath)
         os.system('git init')
 
+    #git add
     def git_add(self):
         index = self.treeView.currentIndex()
         filepath = self.model.filePath(index)
@@ -80,7 +82,8 @@ class Browser(file.Ui_MainWindow,QtWidgets.QMainWindow):
         os.chdir(Ppath)
         Str = "git add " + name
         os.system(Str)
-
+    
+    #git restore
     def git_restore(self):
         index = self.treeView.currentIndex()
         filepath = self.model.filePath(index)
@@ -90,6 +93,7 @@ class Browser(file.Ui_MainWindow,QtWidgets.QMainWindow):
         Str = "git restore " + name
         os.system(Str)
     
+    #git restore staged
     def git_restore_staged(self):
         index = self.treeView.currentIndex()
         filepath = self.model.filePath(index)
@@ -99,6 +103,7 @@ class Browser(file.Ui_MainWindow,QtWidgets.QMainWindow):
         Str = "git restore --staged " + name
         os.system(Str)
 
+    #git rm cached
     def git_rm_cached(self):
         index = self.treeView.currentIndex()
         filepath = self.model.filePath(index)
@@ -108,6 +113,7 @@ class Browser(file.Ui_MainWindow,QtWidgets.QMainWindow):
         Str = "git rm --cached " + name
         os.system(Str)
 
+    #git rm
     def git_rm(self):
         index = self.treeView.currentIndex()
         filepath = self.model.filePath(index)
@@ -117,6 +123,7 @@ class Browser(file.Ui_MainWindow,QtWidgets.QMainWindow):
         Str = "git rm " + name
         os.system(Str)
 
+    #git mv
     def git_mv(self):        
         self.new_window = ChangeName()
         self.new_window.name_entered.connect(self.handle_name_entered)
@@ -127,12 +134,35 @@ class Browser(file.Ui_MainWindow,QtWidgets.QMainWindow):
         filepath = self.model.filePath(index)
         Ppath = os.path.abspath(os.path.join(filepath, os.pardir))
         name = self.model.fileName(index)
-        os.chdir(Ppath)
-        Str = "git mv " + name.rstrip() + " " + changed_name
-        os.system(Str)
+        file_list = self.get_file_in_directory(Ppath)
+        file_list_check_result = self.file_list_check(file_list, changed_name)
+        if changed_name =="" or file_list_check_result == False:
+            self.name_change_error()
+        else:
+            os.chdir(Ppath)
+            Str = "git mv " + name.rstrip() + " " + changed_name
+            os.system(Str)
 
-     
+    def get_file_in_directory(self, directory):
+        file_list = []
+        for root, dirs, files in os.walk(directory):
+            for file in files:
+                file_path = os.path.join(root, file)
+                file_list.append(file_path)
+        return file_list
+    
+    def file_list_check(self, file_list, changed_name):
+        for file in file_list:
+            file_name = os.path.basename(file)
+            if file_name == changed_name:
+                return False
+        return True
+    def name_change_error(self):
+        self.new_window = NameChangeError()
+        self.new_window.show()
+    
 
+    #git commit
     def git_commit(self):
         self.file_list = QListWidget(self)
 
@@ -154,7 +184,6 @@ class Browser(file.Ui_MainWindow,QtWidgets.QMainWindow):
             if file_status in ["A ", "M "]:
                 commitable_files.append(file_path)
         return commitable_files
-
 
     def show_commitable_files(self, commitable_files):
         commitable_files_window = CommitableFileWindow(commitable_files, parent=self)
@@ -259,7 +288,25 @@ class ChangeName(QWidget):
         self.name_entered.emit(changed_name)
         self.close()
 
+class NameChangeError(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
 
+        self.setWindowTitle("Name Change Error")
+        self.setGeometry(100,100,400,300)
+
+        self.layout = QVBoxLayout()
+
+        self.label = QLabel("Please enter an empty or non-overlappint file name")
+        self.layout.addWidget(self.label)
+
+        self.button = QPushButton("OK", self)
+        self.button.clicked.connect(self.close)
+        self.layout.addWidget(self.button)
+
+        self.setLayout(self.layout)
+
+    
 
 
 if __name__ == "__main__":
