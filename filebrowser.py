@@ -147,7 +147,6 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
         os.chdir(Ppath)
         Str = "git mv " + name.rstrip() + " " + changed_name
         os.system(Str)
-        # get_status(filepath, True)
 
     def git_commit(self):
         self.file_list = QListWidget(self)
@@ -160,8 +159,11 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
 
     def get_commitable_files(self, directory):
         repo = git.Repo(directory, search_parent_directories=True)
-        diffs = repo.index.diff("HEAD")
-        staged_files = [item.a_path for item in diffs]
+        if len(list(repo.branches)) == 0:
+            staged_files = [item[0] for item in repo.index.entries]
+        else:
+            diffs = repo.index.diff("HEAD")
+            staged_files = [item.a_path for item in diffs]
         return staged_files
 
     def show_commitable_files(self, commitable_files):

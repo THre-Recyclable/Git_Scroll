@@ -4,6 +4,7 @@ import os
 status_cache = {}
 mtime_cache = {}
 
+
 def is_git_repository(path):
     try:
         _ = git.Repo(path, search_parent_directories=True)
@@ -73,3 +74,14 @@ def get_status(file_path, get_status_again):
         status_cache[file_path] = 'untracked'
         mtime_cache[file_path] = mtime
         return 'untracked'
+
+
+def process_staged_files(dirpath, staged_files):
+    repo = git.Repo(dirpath, search_parent_directories=True)
+    for file in staged_files:
+        file_path = os.path.join(repo.working_tree_dir, file)
+        file_path = file_path.replace('\\', '/')
+        if get_status(file_path, False) == 'staged':
+            status_cache[file_path] = 'committed'
+            mtime = os.path.getmtime(file_path)
+            mtime_cache[file_path] = mtime
