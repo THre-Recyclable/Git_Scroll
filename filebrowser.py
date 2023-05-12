@@ -316,7 +316,7 @@ class NameChangeError(QDialog):
 
         self.layout = QVBoxLayout()
 
-        self.label = QLabel("Please enter an empty or non-overlappint file name")
+        self.label = QLabel("Empty or duplicated name is not allowed.")
         self.layout.addWidget(self.label)
 
         self.button = QPushButton("OK", self)
