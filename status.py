@@ -85,3 +85,8 @@ def process_staged_files(dirpath, staged_files):
             status_cache[file_path] = 'committed'
             mtime = os.path.getmtime(file_path)
             mtime_cache[file_path] = mtime
+
+
+def get_directory_status(dirpath):
+    dir_status = status_cache.get(dirpath, 'committed')
+    return dir_status
