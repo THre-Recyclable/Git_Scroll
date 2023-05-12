@@ -7,14 +7,23 @@ mtime_cache = {}
 
 def is_git_repository(path):
     try:
-        _ = git.Repo(path, search_parent_directories=True)
+        repo = git.Repo(path, search_parent_directories=True)
         return True
     except git.exc.InvalidGitRepositoryError:
         return False
 
 
+def is_root(path):
+    repo = git.Repo(path, search_parent_directories=True)
+    if os.path.abspath(path) == repo.working_tree_dir:
+        return True
+    else:
+        return False
+
+
 def get_status(file_path, get_status_again):
     # executing every code below is inefficient, so we will use simple nested dictionary.
+    file_path = file_path.replace('\\', '/')
     file_status = status_cache.get(file_path, 'unknown')
     mtime = os.path.getmtime(file_path)
     if file_status != 'unknown' and get_status_again is False:
@@ -88,5 +97,61 @@ def process_staged_files(dirpath, staged_files):
 
 
 def get_directory_status(dirpath):
-    dir_status = status_cache.get(dirpath, 'committed')
-    return dir_status
+    # print('path: ' + dirpath)\
+    dirpath = dirpath.replace('\\', '/')
+    dirstate = status_cache.get(dirpath, 'unknown')
+    mtime = os.path.getmtime(dirpath)
+    if dirstate != 'unknown' and mtime_cache[dirpath] == mtime:
+        return dirstate
+
+    repo = git.Repo(dirpath, search_parent_directories=True)
+
+    num_modified = 0
+    num_staged = 0
+
+    # Walk through the directory
+    for dirpath, dirnames, filenames in os.walk(dirpath):
+        for dirname in dirnames:
+            subpath = os.path.join(dirpath, dirname)
+            substate = get_directory_status(subpath)
+
+            if substate == 'untracked':
+                status_cache[dirpath] = 'untracked'
+                mtime_cache[dirpath] = mtime
+                return 'untracked'
+
+            elif substate == 'modified':
+                num_modified += 1
+
+            elif substate == 'staged':
+                num_staged += 1
+
+        for filename in filenames:
+            # Get absolute path of the file
+            filepath = os.path.join(dirpath, filename)
+            filestate = get_status(filepath, False)
+
+            if filename in repo.untracked_files:
+                status_cache[dirpath] = 'untracked'
+                mtime_cache[dirpath] = mtime
+                return 'untracked'
+
+            elif filestate == 'modified':
+                num_modified += 1
+
+            elif filestate == 'staged':
+                num_staged += 1
+
+    if num_modified > 0:
+        status_cache[dirpath] = 'modified'
+        mtime_cache[dirpath] = mtime
+        return 'modified'
+
+    if num_staged > 0:
+        status_cache[dirpath] = 'staged'
+        mtime_cache[dirpath] = mtime
+        return 'staged'
+
+    status_cache[dirpath] = 'committed'
+    mtime_cache[dirpath] = mtime
+    return 'committed'
