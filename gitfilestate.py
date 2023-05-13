@@ -21,9 +21,9 @@ class GitFileState(QtWidgets.QFileSystemModel):
 
             if os.path.exists(filepath) and is_git_repository(filepath) and is_root(filepath) is False:
                 # print('calling get status function...')
-                print('calling get status function, path is: ' + filepath)
+                # print('calling get status function, path is: ' + filepath)
                 file_status = get_git_status(filepath)
-                print('retrieved: ' + file_status)
+                # print('retrieved: ' + file_status)
                 return self.icons.get(file_status, super().data(index, role))
 
             # if file_info.isFile():
