@@ -39,9 +39,9 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
         filepath = self.model.filePath(index)
 
         if is_git_repository(filepath) and os.path.isfile(filepath):
-            file_stat = get_status(filepath, False)
+            file_stat = get_git_status(filepath)
 
-            if file_stat == 'untracked':
+            if file_stat == 'untracked' or file_stat == 'ignored':
                 git_add = menu.addAction("git_add")
                 git_add.triggered.connect(self.git_add)
 
@@ -94,8 +94,7 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
         os.chdir(Ppath)
         Str = "git add " + name
         os.system(Str)
-        get_status(filepath, True)
-
+        calculate_status(filepath)
 
     #git restore
     def git_restore(self):
@@ -106,7 +105,7 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
         os.chdir(Ppath)
         Str = "git restore " + name
         os.system(Str)
-        get_status(filepath, True)
+        calculate_status(filepath)
 
     #git restore staged
     def git_restore_staged(self):
@@ -117,7 +116,7 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
         os.chdir(Ppath)
         Str = "git restore --staged " + name
         os.system(Str)
-        get_status(filepath, True)
+        calculate_status(filepath)
 
     #git rm cached
     def git_rm_cached(self):
@@ -128,18 +127,19 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
         os.chdir(Ppath)
         Str = "git rm --cached " + name
         os.system(Str)
-        get_status(filepath, True)
+        calculate_status(filepath)
 
     #git rm
     def git_rm(self):
         index = self.treeView.currentIndex()
         filepath = self.model.filePath(index)
+        repo = git.Repo(filepath, search_parent_directories=True)
         Ppath = os.path.abspath(os.path.join(filepath, os.pardir))
         name = self.model.fileName(index)
         os.chdir(Ppath)
         Str = "git rm " + name
         os.system(Str)
-        get_status(filepath, True)
+        calculate_status(repo.working_tree_dir)
 
     #git mv
     def git_mv(self):        
@@ -150,6 +150,7 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
     def handle_name_entered(self, changed_name):
         index = self.treeView.currentIndex()
         filepath = self.model.filePath(index)
+        repo = git.Repo(filepath, search_parent_directories=True)
         Ppath = os.path.abspath(os.path.join(filepath, os.pardir))
         name = self.model.fileName(index)
         file_list = self.get_file_in_directory(Ppath)
@@ -160,6 +161,7 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
             os.chdir(Ppath)
             Str = "git mv " + name.rstrip() + " " + changed_name
             os.system(Str)
+            calculate_status(repo.working_tree_dir)
 
     def get_file_in_directory(self, directory):
         file_list = []
@@ -192,11 +194,32 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
 
     def get_commitable_files(self, directory):
         repo = git.Repo(directory, search_parent_directories=True)
-        if len(list(repo.branches)) == 0:
-            staged_files = [item[0] for item in repo.index.entries]
-        else:
-            diffs = repo.index.diff("HEAD")
-            staged_files = [item.a_path for item in diffs]
+        # if len(list(repo.branches)) == 0:
+        #     staged_files = [item[0] for item in repo.index.entries]
+        # else:
+        #     diffs = repo.index.diff("HEAD")
+        #     staged_files = [item.a_path for item in diffs]
+        # return staged_files
+        status_output = repo.git.execute(['git', 'status', '--porcelain', '--ignored']).splitlines()
+        staged_files = []
+        for line in status_output:
+            status, filepath = line[:2], line[3:]
+            if '->' in filepath:
+                _, filepath = filepath.split(' -> ')
+
+            if status == 'A ':
+                staged_files.append('(new) ' + filepath)
+            elif status == 'M ':
+                staged_files.append('(modified) ' + filepath)
+            elif status == 'D ':
+                staged_files.append('(deleted) ' + filepath)
+            elif status == 'R ':
+                staged_files.append('(renamed) ' + filepath)
+            elif status == 'C ':
+                staged_files.append('(copied) ' + filepath)
+            elif status == 'U ':
+                staged_files.append('(Unmerged) ' + filepath)
+
         return staged_files
 
     def show_commitable_files(self, commitable_files):
@@ -212,11 +235,15 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
     def handle_message_entered(self, commit_message):
         index = self.treeView.currentIndex()
         filepath = self.model.filePath(index)
+        repo = git.Repo(filepath, search_parent_directories=True)
         staged_files = self.get_commitable_files(filepath)
         os.chdir(filepath)
         Str = "git commit -m \"" + commit_message + "\""
         os.system(Str)
-        process_staged_files(filepath, staged_files)
+        if len(commit_message.strip()) != 0 and len(staged_files) > 0:
+            # process_staged_files(filepath, staged_files)
+            # process_staged_directories(filepath)
+            calculate_status(repo.working_tree_dir)
 
 
 class CommitableFileWindow(QDialog):
@@ -324,8 +351,6 @@ class NameChangeError(QDialog):
         self.layout.addWidget(self.button)
 
         self.setLayout(self.layout)
-
-    
 
 
 if __name__ == "__main__":
