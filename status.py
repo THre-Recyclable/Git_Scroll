@@ -28,6 +28,7 @@ def process_staged_files(dirpath, staged_files):
         if os.path.exists(os.path.join(repo.working_tree_dir, file)):
             file_path = os.path.join(repo.working_tree_dir, file)
             file_path = file_path.replace('\\', '/')
+            file_path = file_path.replace('"', '')
             if status_cache.get(file_path, 'unknown') == 'staged':
                 status_cache[file_path] = 'committed'
                 mtime = os.path.getmtime(file_path)
@@ -40,6 +41,7 @@ def process_staged_directories(dirpath):
         for dirname in dirnames:
             path = os.path.join(root, dirname)
             path = path.replace('\\', '/')
+            path = path.replace('"', '')
             path += '/'
 
             if status_cache.get(path, 'unknown') == 'staged':
@@ -50,6 +52,7 @@ def get_git_status(path):
     repo = git.Repo(path, search_parent_directories=True)
     repo_path = repo.working_tree_dir
     path = path.replace('\\', '/')
+    path = path.replace('"', "")
     if os.path.isdir(path):
         path += '/'
 
@@ -100,6 +103,7 @@ def calculate_status(path):
     root_dir = repo.working_tree_dir
     calculated_cache[root_dir] = True
     root_dir = root_dir.replace('\\', '/')
+    root_dir = root_dir.replace('"', '')
     status_output = repo.git.execute(['git', 'status', '--porcelain', '--ignored']).splitlines()
 
     # print('calculate_status: ' + path)
@@ -115,6 +119,7 @@ def calculate_status(path):
             # print('dir name: ' + dirname)
             path = os.path.join(root, dirname)
             path = path.replace('\\', '/')
+            path = path.replace('"', '')
             mtime = os.path.getmtime(path)
             path += '/'
             # print('init path: ' + path)
@@ -127,6 +132,7 @@ def calculate_status(path):
             # print('file name: ' + filename)
             path = os.path.join(root, filename)
             path = path.replace('\\', '/')
+            path = path.replace('"', '')
             mtime = os.path.getmtime(path)
             # print('init path: ' + path)
 
@@ -141,6 +147,7 @@ def calculate_status(path):
             _, filepath = filepath.split(' -> ')
         filepath = os.path.join(root_dir, filepath)
         filepath = filepath.replace('\\', '/')
+        filepath = filepath.replace('"', '')
         if os.path.isdir(filepath):
             isdir = True
         else:
@@ -212,6 +219,7 @@ def change_all(dirpath, status):
         for dir in dirs:
             path = os.path.join(root, dir)
             path = path.replace('\\', '/')
+            path = path.replace('"', '')
             mtime = os.path.getmtime(path)
             path += '/'
 
@@ -221,6 +229,7 @@ def change_all(dirpath, status):
         for file in files:
             path = os.path.join(root, file)
             path = path.replace('\\', '/')
+            path = path.replace('"', '')
             mtime = os.path.getmtime(path)
 
             status_cache[path] = status

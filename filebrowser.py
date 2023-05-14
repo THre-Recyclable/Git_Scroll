@@ -23,12 +23,12 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
         self.model = GitFileState()
         self.model.setRootPath(QtCore.QDir.rootPath())
         self.treeView.setModel(self.model)
-        self.treeView.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
+        # self.treeView.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
         # self.treeView.setRootIndex(self.model.index(path))
         # self.treeView.setSortingEnabled(True)
         self.treeView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.treeView.customContextMenuRequested.connect(self.context_menu)
-        self.treeView.doubleClicked.connect(self.open_file)
+        # self.treeView.doubleClicked.connect(self.open_file)
 
     def context_menu(self, point):
         menu = QtWidgets.QMenu()
