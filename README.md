@@ -9,7 +9,7 @@ PyQt5를 사용하여 GUI를 구현하였으며, GitPython 라이브러리를 �
 
 - 환경: 이 프로젝트는 `Windows 11` 환경에서 및 `Python 3.11` 인터프리터를 사용하여 제작 및 실험되었습니다. 일부 다른 버전에서도 정상 작동할 수 있으나 해당 버전의 환경에서 사용하는 것을 추천합니다.
 
-- 설치: 이 프로젝트는 `PyQt5` 및 `GitPython` 라이브러리를 필요로 합니다. 이 라이브러리들은 `requirement.py`를 실행하여 설치할 수 있습니다.
+- 설치: 이 프로젝트는 `PyQt5` 및 `GitPython` 라이브러리를 필요로 합니다. 이 라이브러리들은 `requirement.py`를 실행하거나, `pip install pyqt5` 및 `pip install gitpython`을 실행하여 설치할 수 있습니다. 또한 git이 설치되어 있어야 합니다.
 
 
 
