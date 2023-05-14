@@ -237,14 +237,22 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
         filepath = self.model.filePath(index)
         repo = git.Repo(filepath, search_parent_directories=True)
         staged_files = self.get_commitable_files(filepath)
-        os.chdir(filepath)
-        Str = "git commit -m \"" + commit_message + "\""
-        os.system(Str)
-        if len(commit_message.strip()) != 0 and len(staged_files) > 0:
-            # process_staged_files(filepath, staged_files)
-            # process_staged_directories(filepath)
-            calculate_status(repo.working_tree_dir)
+        if commit_message == "":
+            self.commit_message_change_error()
+        else:
+            os.chdir(filepath)
+            Str = "git commit -m \"" + commit_message + "\""
+            os.system(Str)
+            if len(commit_message.strip()) != 0 and len(staged_files) > 0:
+                # process_staged_files(filepath, staged_files)
+                # process_staged_directories(filepath)
+                calculate_status(repo.working_tree_dir)
 
+    def commit_message_change_error(self):
+        self.new_CMC_window = CommitMessageError()
+        self.new_CMC_window.show()
+
+        
 
 class CommitableFileWindow(QDialog):
     ok_clicked = QtCore.pyqtSignal(bool)
@@ -352,6 +360,23 @@ class NameChangeError(QDialog):
 
         self.setLayout(self.layout)
 
+class CommitMessageError(QDialog):
+    def __init__(self, parent = None):
+        super().__init__(parent)
+
+        self.setWindowTitle("Commit Message Error")
+        self.setGeometry(200,100,400,300)
+
+        self.layout = QVBoxLayout()
+
+        self.label = QLabel("Empty Commit Message is not allowed")
+        self.layout.addWidget(self.label)
+
+        self.button = QPushButton("OK", self)
+        self.button.clicked.connect(self.close)
+        self.layout.addWidget(self.button)
+
+        self.setLayout(self.layout)
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication([])
