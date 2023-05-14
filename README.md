@@ -5,6 +5,9 @@ Git Scroll은 Python으로 만들어진 Windows용 GUI 기반 Repository Managem
 PyQt5를 사용하여 GUI를 구현하였으며, GitPython 라이브러리를 통해 Git 저장소와 상호작용합니다.
 <img width="467" alt="fileexample" src="https://github.com/THre-Recyclable/Git_Scroll/assets/62564727/0de560ff-9189-4d2a-9cbb-6699f404fc87">
 
+이 프로젝트는 다음의 파일 브라우저 시스템을 이용하여 만들어졌습니다.
+https://github.com/Hshadow/file-browser-with-python-PyQt5
+
 ## **설치 및 환경**
 
 - 환경: 이 프로젝트는 `Windows 11` 환경에서 및 `Python 3.11` 인터프리터를 사용하여 제작 및 실험되었습니다. 일부 다른 버전에서도 정상 작동할 수 있으나 해당 버전의 환경에서 사용하는 것을 추천합니다.
