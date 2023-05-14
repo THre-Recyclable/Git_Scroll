@@ -72,12 +72,13 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
                 git_restore_staged.triggered.connect(self.git_restore_staged)
 
         elif os.path.isdir(filepath):
-            git_init = menu.addAction("git_init")
-            git_init.triggered.connect(self.git_init)
-
             if is_git_repository(filepath) is True:
                 git_commit = menu.addAction("git_commit")
                 git_commit.triggered.connect(self.git_commit)
+            else:
+                git_init = menu.addAction("git_init")
+                git_init.triggered.connect(self.git_init)
+
 
         cursor = QtGui.QCursor()
         menu.exec_(cursor.pos())
