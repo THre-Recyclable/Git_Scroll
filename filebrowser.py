@@ -4,6 +4,7 @@ from PyQt5 import QtCore
 import os, subprocess, threading
 from PyQt5.QtWidgets import QDialog
 from PyQt5.QtWidgets import *
+from PyQt5.QtGui import QFont
 import sys
 
 from ui import file
@@ -272,7 +273,7 @@ class CommitableFileWindow(QDialog):
         super().__init__(parent)
 
         self.setWindowTitle("Commitable Files")
-        self.setGeometry(100, 100, 400, 300)
+        self.setGeometry(300, 300, 400, 300)
 
         self.layout = QVBoxLayout()
 
@@ -291,6 +292,9 @@ class CommitableFileWindow(QDialog):
 
         self.setLayout(self.layout)
 
+        font = QFont("Arial", 10)
+        self.setFont(font)
+
     def open_get_commit_message(self):
         self.ok_clicked.emit(True)
         self.close()
@@ -303,7 +307,7 @@ class CommitMessageWindow(QWidget):
         super().__init__()
 
         self.setWindowTitle("Write Commit Message")
-        self.setGeometry(200, 200, 400, 300)
+        self.setGeometry(300, 300, 400, 100)
 
         self.layout = QVBoxLayout()
 
@@ -319,6 +323,9 @@ class CommitMessageWindow(QWidget):
 
         self.setLayout(self.layout)
 
+        font = QFont("Arial", 10)
+        self.setFont(font)
+
     def emit_message_entered(self):
         commit_message = self.line_edit.text()
         self.message_entered.emit(commit_message)
@@ -332,7 +339,7 @@ class ChangeName(QWidget):
         super().__init__()
 
         self.setWindowTitle("Change file name")
-        self.setGeometry(200, 200, 400, 300)
+        self.setGeometry(300, 300, 400, 100)
 
         self.layout = QVBoxLayout()
 
@@ -348,6 +355,9 @@ class ChangeName(QWidget):
 
         self.setLayout(self.layout)
 
+        font = QFont("Arial", 10)
+        self.setFont(font)
+
     def emit_name_entered(self):
         changed_name = self.line_edit.text()
         self.name_entered.emit(changed_name)
@@ -358,7 +368,7 @@ class NameChangeError(QDialog):
         super().__init__(parent)
 
         self.setWindowTitle("Name Change Error")
-        self.setGeometry(100,100,400,300)
+        self.setGeometry(300,200,400,100)
 
         self.layout = QVBoxLayout()
 
@@ -371,16 +381,19 @@ class NameChangeError(QDialog):
 
         self.setLayout(self.layout)
 
+        font = QFont("Arial", 10)
+        self.setFont(font)
+
 class CommitMessageError(QDialog):
     def __init__(self, parent = None):
         super().__init__(parent)
 
         self.setWindowTitle("Commit Message Error")
-        self.setGeometry(200,100,400,300)
+        self.setGeometry(300,200,400,100)
 
         self.layout = QVBoxLayout()
 
-        self.label = QLabel("Empty Commit Message is not allowed")
+        self.label = QLabel("Empty Commit Message is not allowed.")
         self.layout.addWidget(self.label)
 
         self.button = QPushButton("OK", self)
@@ -388,6 +401,9 @@ class CommitMessageError(QDialog):
         self.layout.addWidget(self.button)
 
         self.setLayout(self.layout)
+
+        font = QFont("Arial", 10)
+        self.setFont(font)
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication([])
