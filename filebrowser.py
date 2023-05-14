@@ -23,20 +23,27 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
         self.model = GitFileState()
         self.model.setRootPath(QtCore.QDir.rootPath())
         self.treeView.setModel(self.model)
+        self.treeView.setSelectionBehavior(QtWidgets.QAbstractItemView.SelectRows)
         # self.treeView.setRootIndex(self.model.index(path))
         # self.treeView.setSortingEnabled(True)
         self.treeView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.treeView.customContextMenuRequested.connect(self.context_menu)
-        # self.treeView.doubleClicked.connect(self.open_file)
+        self.treeView.doubleClicked.connect(self.open_file)
 
-    def context_menu(self):
+    def context_menu(self, point):
         menu = QtWidgets.QMenu()
         open = menu.addAction("Open")
         open.triggered.connect(self.open_file)
 
         index = self.treeView.currentIndex()
-        index = index.siblingAtColumn(1)
+        index = index.siblingAtColumn(0)
         filepath = self.model.filePath(index)
+
+        # point = QtGui.QCursor.pos()
+        # point = self.treeView.mapFromGlobal(point)
+        # index = self.treeView.indexAt(point)
+        # name_index = index.siblingAtColumn(1)
+        # filepath = self.model.filePath(name_index)
 
         if is_git_repository(filepath) and os.path.isfile(filepath):
             file_stat = get_git_status(filepath)
@@ -66,8 +73,10 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
         elif os.path.isdir(filepath):
             git_init = menu.addAction("git_init")
             git_init.triggered.connect(self.git_init)
-            git_commit = menu.addAction("git_commit")
-            git_commit.triggered.connect(self.git_commit)
+
+            if is_git_repository(filepath) is True:
+                git_commit = menu.addAction("git_commit")
+                git_commit.triggered.connect(self.git_commit)
 
         cursor = QtGui.QCursor()
         menu.exec_(cursor.pos())
@@ -90,9 +99,11 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
         index = self.treeView.currentIndex()
         filepath = self.model.filePath(index)
         Ppath = os.path.abspath(os.path.join(filepath, os.pardir))
-        name = self.model.fileName(index)
+        name = self.model.fileName(index.siblingAtColumn(0))
         os.chdir(Ppath)
         Str = "git add " + name
+        if get_git_status(filepath) == 'ignored':
+            Str += " -f"
         os.system(Str)
         calculate_status(filepath)
 
@@ -101,7 +112,7 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
         index = self.treeView.currentIndex()
         filepath = self.model.filePath(index)
         Ppath = os.path.abspath(os.path.join(filepath, os.pardir))
-        name = self.model.fileName(index)
+        name = self.model.fileName(index.siblingAtColumn(0))
         os.chdir(Ppath)
         Str = "git restore " + name
         os.system(Str)
@@ -112,7 +123,7 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
         index = self.treeView.currentIndex()
         filepath = self.model.filePath(index)
         Ppath = os.path.abspath(os.path.join(filepath, os.pardir))
-        name = self.model.fileName(index)
+        name = self.model.fileName(index.siblingAtColumn(0))
         os.chdir(Ppath)
         Str = "git restore --staged " + name
         os.system(Str)
@@ -123,7 +134,7 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
         index = self.treeView.currentIndex()
         filepath = self.model.filePath(index)
         Ppath = os.path.abspath(os.path.join(filepath, os.pardir))
-        name = self.model.fileName(index)
+        name = self.model.fileName(index.siblingAtColumn(0))
         os.chdir(Ppath)
         Str = "git rm --cached " + name
         os.system(Str)
@@ -135,7 +146,7 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
         filepath = self.model.filePath(index)
         repo = git.Repo(filepath, search_parent_directories=True)
         Ppath = os.path.abspath(os.path.join(filepath, os.pardir))
-        name = self.model.fileName(index)
+        name = self.model.fileName(index.siblingAtColumn(0))
         os.chdir(Ppath)
         Str = "git rm " + name
         os.system(Str)
@@ -152,7 +163,7 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
         filepath = self.model.filePath(index)
         repo = git.Repo(filepath, search_parent_directories=True)
         Ppath = os.path.abspath(os.path.join(filepath, os.pardir))
-        name = self.model.fileName(index)
+        name = self.model.fileName(index.siblingAtColumn(0))
         file_list = self.get_file_in_directory(Ppath)
         file_list_check_result = self.file_list_check(file_list, changed_name)
         if changed_name =="" or file_list_check_result == False:
@@ -237,7 +248,7 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
         filepath = self.model.filePath(index)
         repo = git.Repo(filepath, search_parent_directories=True)
         staged_files = self.get_commitable_files(filepath)
-        if commit_message == "":
+        if len(commit_message.strip()) == 0:
             self.commit_message_change_error()
         else:
             os.chdir(filepath)
