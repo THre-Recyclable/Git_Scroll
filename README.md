@@ -3,7 +3,7 @@
 Git Scroll은 Python으로 만들어진 Windows용 GUI 기반 Repository Management Service입니다. File Browsing과 일부 repository 관리 기능을 실행할 수 있으며, 스크롤 및 펼치기/접기를 통해 파일 브라우징 및 repository 관리가 가능하여 Git_Scroll으로 명명되었습니다. 이 특성 덕분에, 여러 git repository를 하나의 창에 표시하고 각각을 따로 관리할 수 있습니다.
 
 PyQt5를 사용하여 GUI를 구현하였으며, GitPython 라이브러리를 통해 Git 저장소와 상호작용합니다.
-<img width="393" alt="fileexample" src="https://github.com/THre-Recyclable/Git_Scroll/assets/62564727/4d51dc27-3550-4acd-97b3-1891bcc28404">
+<img width="464" alt="fileexample" src="https://github.com/THre-Recyclable/Git_Scroll/assets/62564727/7f7698e2-1b32-4a9e-905a-33bf970d94de">
 
 이 프로젝트는 다음의 파일 브라우저 시스템을 이용하여 만들어졌습니다.
 https://github.com/Hshadow/file-browser-with-python-PyQt5
