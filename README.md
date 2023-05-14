@@ -46,7 +46,7 @@ Git_Scroll은 선택된 것이 파일인지 디렉토리인지에 따라, 만약
 모든 파일은 기본적으로 Open이 가능합니다(Git repository가 아니더라도).
 
 #### 디렉토리를 선택했을 경우
-- `git_init`: 선택된 디렉토리에 대해 `git init`을 실행하여 git repository를 초기화합니다.
+- `git_init`: 선택된 디렉토리에 대해 `git init`을 실행하여 git repository를 초기화합니다. git repository에 속하지 않는 디렉토리를 대상으로만 실행이 가능합니다.
 
 - `git_commit`: 선택된 디렉토리가 git repository에 속할 때 실행이 가능합니다. 현재 선택된 디렉토리의 git repository에 대해서 `git commit`을 실행합니다. 현재 staged인 파일의 리스트를 보여주며, 만약 이 파일이 하나도 없거나 commit message가 비어 있다면 실행을 취소합니다.
 
