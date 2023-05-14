@@ -104,7 +104,7 @@ Git_Scroll은 선택된 것이 파일인지 디렉토리인지에 따라, 만약
 
 
 
-## **사용 시 주의사항**
+## **(중요) 사용 시 주의사항**
 
 - Git Scroll은 repository 내의 상태 변화를 대부분 추적하지만, 본 프로그램 외에 다른 프로그램을 통해 git을 관리할 경우 그 변화 사항이 즉시 반영됨을 보장하지 않습니다. 특히, Git Scroll이 실행된 상태에서 명령 프롬프트 혹은 다른 git 관리 프로그램을 통해 `git commit`을 실행할 경우, `staged` 파일이 `committed`로 바뀌지 않고 계속해서 `staged`로 남게 됩니다. 이 때에는 Git Scroll을 재실행하거나, 해당 repository 내의 다른 파일에 대한 git function을 수행해서 repository가 상태 변화를 다시 계산하도록 하면 변화 사항이 정상적으로 반영됩니다.
 
