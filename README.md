@@ -16,6 +16,8 @@ https://github.com/Hshadow/file-browser-with-python-PyQt5
 
 - **주의** : python이 설치된 경로에 한글이 있거나, Git Scroll이 존재하는 경로에 한글이 있으면 정상 동작하지 않을 수 있습니다.
 
+- 실행: filebrowser.py를 위 환경 및 조건을 만족한 뒤에 실행하면 됩니다.
+
 
 
 
