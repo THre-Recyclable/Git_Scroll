@@ -76,6 +76,10 @@ Git_Scroll은 선택된 것이 파일인지 디렉토리인지에 따라, 만약
 <img width="508" alt="iconex" src="https://github.com/THre-Recyclable/Git_Scroll/assets/62564727/db16475c-8b6b-41f3-b77a-f7365457fc31">
 
 
+## 파일 상태
+
+하나의 파일이 여러 상태로 존재할 경우, 더 높은 우선순위의 상태로 표시됩니다.
+이 때, 우선순위는 untracked > modified > staged > committed입니다.
 
 
 ## 디렉토리 상태
