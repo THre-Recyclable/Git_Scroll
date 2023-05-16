@@ -16,8 +16,6 @@ https://github.com/Hshadow/file-browser-with-python-PyQt5
 
 - **주의** : python이 설치된 경로에 한글이 있거나, Git Scroll이 존재하는 경로에 한글이 있으면 정상 동작하지 않을 수 있습니다.
 
-- 실행: filebrowser.py를 위 환경 및 조건을 만족한 뒤에 실행하면 됩니다.
-
 
 
 
@@ -78,7 +76,7 @@ Git_Scroll은 선택된 것이 파일인지 디렉토리인지에 따라, 만약
 
 ## 파일 상태
 
-하나의 파일이 여러 상태로 존재할 경우, 가장 최근에 설정된 파일의 상태를 표시합니다.
+하나의 파일이 여러 상태로 존재할 경우, Untracked > Modified > Staged > Committed의 우선순위로 표시됩니다.
 
 
 ## 디렉토리 상태
