@@ -76,7 +76,7 @@ Git_Scroll은 선택된 것이 파일인지 디렉토리인지에 따라, 만약
 
 ## 파일 상태
 
-하나의 파일이 여러 상태로 존재할 경우, Untracked > Modified > Staged > Committed의 우선순위로 표시됩니다.
+하나의 파일이 여러 상태로 존재할 경우, Untracked > Modified > Staged > Committed > Ignored의 우선순위로 표시됩니다.
 
 
 ## 디렉토리 상태
