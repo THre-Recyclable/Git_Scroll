@@ -5,6 +5,7 @@ import os, subprocess, threading
 from PyQt5.QtWidgets import QDialog
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QFont
+from PyQt5.QtCore import Qt
 import sys
 
 
@@ -14,7 +15,6 @@ def get_current_branch(filepath):
         return result.strip()
     except subprocess.CalledProcessError:
         return None
-
 
 def getCommitHistory(branch):
     #command = ['git', 'log', branch, '--format=%H,%an,%s', '--graph']
@@ -44,6 +44,12 @@ def getCommitHistory(branch):
         })
     return log_entries
 
+def get_commit_info(commit_hash):
+    command = ['git', 'show', commit_hash]
+    output = subprocess.check_output(command).decode('utf-8')
+    return output
+
+
 class showCommitHistory(QWidget):
     def __init__(self, filepath):
         super().__init__()
@@ -67,10 +73,15 @@ class showCommitHistory(QWidget):
         table_widget.verticalHeader().setVisible(False)
 
         table_widget.setColumnWidth(0,100)
-        table_widget.setColumnWidth(1,200)
-        table_widget.setColumnWidth(2,300)
+        table_widget.setColumnWidth(1,400)
+        table_widget.setColumnWidth(2,100)
         table_widget.setColumnWidth(3,400)
 
+        table_widget.setEditTriggers(QTableWidget.NoEditTriggers)
+
+        table_widget.itemClicked.connect(self.handle_cell_clicked)
+
+        
         row =0
         for log in commit_log:
             temp_graph = log['commit_graph']
@@ -86,11 +97,49 @@ class showCommitHistory(QWidget):
                     item = QTableWidgetItem(f'{temp_name}')
                 elif col==3:
                     item = QTableWidgetItem(f'{temp_message}')
+                item.setFlags(item.flags() & ~Qt.ItemIsEditable)
                 table_widget.setItem(row, col, item)
             row += 1
         
 
         self.setGeometry(300, 300, 1000, 1000)
         self.show()
+       
+    def handle_cell_clicked(self, input_item):
+        item = input_item.text()
+        if item is not None:
+            commit_info = get_commit_info(item)
+            self.new_window = showCommitInfo(commit_info)
+            self.new_window.show()
 
+    
+
+
+class showCommitInfo(QWidget):
+    def __init__(self, commit_info):
+        super().__init__()
         
+        self.setWindowTitle("Commit Information")
+        self.setGeometry(300, 300, 400, 300)
+
+        self.layout = QVBoxLayout()
+
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
+
+        content_widget = QWidget()
+        content_layout = QVBoxLayout(content_widget)
+
+        text_edit = QTextEdit()
+        text_edit.setReadOnly(True)
+        text_edit.setPlainText(commit_info)
+        content_layout.addWidget(text_edit)
+       
+        scroll_area.setWidget(content_widget)
+        self.layout.addWidget(scroll_area)
+
+
+
+        self.setLayout(self.layout)
+
+        self.show()
