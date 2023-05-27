@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QFont
 import sys
 
+from commitHistory import *
 from ui import file
 from status import *
 from gitfilestate import *
@@ -48,7 +49,7 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
 
         if is_git_repository(filepath) and os.path.isfile(filepath):
             file_stat = get_git_status(filepath)
-
+            
             if file_stat == 'untracked' or file_stat == 'ignored':
                 git_add = menu.addAction("git_add")
                 git_add.triggered.connect(self.git_add)
@@ -72,7 +73,11 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
                 git_restore_staged.triggered.connect(self.git_restore_staged)
 
         elif os.path.isdir(filepath):
+            
             if is_git_repository(filepath) is True:
+                commit_history = menu.addAction("Commit History")
+                commit_history.triggered.connect(self.commit_history)
+
                 git_commit = menu.addAction("git_commit")
                 git_commit.triggered.connect(self.git_commit)
             else:
@@ -89,6 +94,14 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
         filepath = self.model.filePath(index)
         os.startfile(filepath)
     
+    def commit_history(self):
+        index = self.treeView.currentIndex()
+        filepath = self.model.filePath(index)
+        self.new_window = showCommitHistory(filepath)
+        self.new_window.show()
+
+
+
     #git init
     def git_init(self):
         index = self.treeView.currentIndex()
