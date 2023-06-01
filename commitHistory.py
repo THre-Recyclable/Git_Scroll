@@ -86,9 +86,9 @@ class showCommitHistory(QWidget):
 
         table_widget.setEditTriggers(QTableWidget.NoEditTriggers)
 
-        table_widget.itemClicked.connect(self.handle_cell_clicked)
+        #table_widget.itemClicked.connect(self.handle_cell_clicked)
+        table_widget.itemClicked.connect(lambda item: self.handle_cell_clicked(item, hash_list))
 
-        
         row =0
         for log in commit_log:
             temp_graph = log['commit_graph']
@@ -143,8 +143,11 @@ class showCommitHistory(QWidget):
         self.setGeometry(100, 100, 1000, 1000)
         self.show()
        
-    def handle_cell_clicked(self, input_item):
-        item = input_item.text()
+    def handle_cell_clicked(self, input_item, hash_list):
+        row = input_item.row()
+        
+        item = hash_list[row]
+        #item = input_item.text()
         if item is not None:
             commit_info = get_commit_info(item)
             self.new_window = showCommitInfo(commit_info)
