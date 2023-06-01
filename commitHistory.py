@@ -74,7 +74,7 @@ class showCommitHistory(QWidget):
         table_widget.verticalHeader().setVisible(False)
 
         for i in range(graph_cnt):
-            table_widget.setColumnWidth(i, 10)
+            table_widget.setColumnWidth(i, 5)
         #table_widget.setColumnWidth(0,100)
         #table_widget.setColumnWidth(1,400)
         #table_widget.setColumnWidth(2,100)
@@ -106,6 +106,8 @@ class showCommitHistory(QWidget):
                         graph_frag = "\u2197"
                     elif temp_graph[col] == "\\":
                         graph_frag = "\u2196"
+                    elif temp_graph[col] == "_":
+                        graph_frag = "-"
 
                     item = QTableWidgetItem(f'{graph_frag}')
                     item.setFlags(item.flags() & ~Qt.ItemIsEditable)
