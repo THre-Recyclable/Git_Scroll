@@ -63,7 +63,8 @@ class showCommitHistory(QWidget):
         
         table_widget = QTableWidget(self)
         
-        table_widget.setColumnCount(4)
+        graph_cnt = self.get_max_graph(commit_log)
+        table_widget.setColumnCount(graph_cnt + 2)
         table_widget.setRowCount(len(commit_log))
         
         table_widget.setGeometry(0,0,1000,1000)
@@ -72,10 +73,16 @@ class showCommitHistory(QWidget):
         table_widget.horizontalHeader().setVisible(False)
         table_widget.verticalHeader().setVisible(False)
 
-        table_widget.setColumnWidth(0,100)
-        table_widget.setColumnWidth(1,400)
-        table_widget.setColumnWidth(2,100)
-        table_widget.setColumnWidth(3,400)
+        for i in range(graph_cnt):
+            table_widget.setColumnWidth(i, 10)
+        #table_widget.setColumnWidth(0,100)
+        #table_widget.setColumnWidth(1,400)
+        #table_widget.setColumnWidth(2,100)
+        #table_widget.setColumnWidth(3,400)
+        table_widget.setColumnWidth(graph_cnt, 100)
+        table_widget.setColumnWidth(graph_cnt + 1, 500)
+        
+        hash_list = self.get_hash_list(commit_log)
 
         table_widget.setEditTriggers(QTableWidget.NoEditTriggers)
 
@@ -88,21 +95,50 @@ class showCommitHistory(QWidget):
             temp_hash = log['commit_hash']
             temp_name = log['author_name']
             temp_message = log['commit_message']
-            for col in range(table_widget.columnCount()):
-                if col ==0:
-                    item = QTableWidgetItem(f'{temp_graph}')    
-                elif col ==1:
-                    item = QTableWidgetItem(f'{temp_hash}')
-                elif col ==2:
-                    item = QTableWidgetItem(f'{temp_name}')
-                elif col==3:
-                    item = QTableWidgetItem(f'{temp_message}')
-                item.setFlags(item.flags() & ~Qt.ItemIsEditable)
-                table_widget.setItem(row, col, item)
+            for col in range(graph_cnt):
+                if len(temp_graph) > col:
+                    graph_frag = ""
+                    if temp_graph[col] == "|":
+                        graph_frag = "\u2191"
+                    elif temp_graph[col] == "*":
+                        graph_frag = "*"
+                    elif temp_graph[col] == "/":
+                        graph_frag = "\u2197"
+                    elif temp_graph[col] == "\\":
+                        graph_frag = "\u2196"
+
+                    item = QTableWidgetItem(f'{graph_frag}')
+                    item.setFlags(item.flags() & ~Qt.ItemIsEditable)
+                    table_widget.setItem(row, col, item)
+                else :
+                    empty_string = ""
+                    item = QTableWidgetItem(f'{empty_string}')
+                    item.setFlags(item.flags() & ~Qt.ItemIsEditable)
+                    table_widget.setItem(row, col, item)
+                
+            item = QTableWidgetItem(f'{temp_name}')
+            item.setFlags(item.flags() & ~Qt.ItemIsEditable)
+            table_widget.setItem(row, graph_cnt, item)
+            
+            item = QTableWidgetItem(f'{temp_message}')
+            item.setFlags(item.flags() & ~Qt.ItemIsEditable)
+            table_widget.setItem(row, graph_cnt + 1, item)
+
+            #for col in range(table_widget.columnCount()):
+            #    if col ==0:
+            #        item = QTableWidgetItem(f'{temp_graph}')    
+            #    elif col ==1:
+            #        item = QTableWidgetItem(f'{temp_hash}')
+            #    elif col ==2:
+            #        item = QTableWidgetItem(f'{temp_name}')
+            #    elif col==3:
+            #        item = QTableWidgetItem(f'{temp_message}')
+            #    item.setFlags(item.flags() & ~Qt.ItemIsEditable)
+            #    table_widget.setItem(row, col, item)
             row += 1
         
 
-        self.setGeometry(300, 300, 1000, 1000)
+        self.setGeometry(100, 100, 1000, 1000)
         self.show()
        
     def handle_cell_clicked(self, input_item):
@@ -112,8 +148,20 @@ class showCommitHistory(QWidget):
             self.new_window = showCommitInfo(commit_info)
             self.new_window.show()
 
+    def get_max_graph(self, commit_log):
+        max_graph = 0
+        for log in commit_log:
+            temp_graph = log['commit_graph']
+            if max_graph < len(temp_graph):
+                max_graph = len(temp_graph)
+        return max_graph
     
-
+    def get_hash_list(self, commit_log):
+        hash_list = []
+        for log in commit_log:
+            temp_hash = log['commit_hash']
+            hash_list.append(temp_hash)
+        return hash_list
 
 class showCommitInfo(QWidget):
     def __init__(self, commit_info):
