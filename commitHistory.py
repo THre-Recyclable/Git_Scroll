@@ -66,8 +66,10 @@ class showCommitHistory(QWidget):
         graph_cnt = self.get_max_graph(commit_log)
         table_widget.setColumnCount(graph_cnt + 2)
         table_widget.setRowCount(len(commit_log))
-        
-        table_widget.setGeometry(0,0,1000,1000)
+
+        widget_width = 50*graph_cnt + 600
+
+        table_widget.setGeometry(0,0,1000,widget_width)
         
         table_widget.setStyleSheet("QTableWidget { border: none; }")
         table_widget.horizontalHeader().setVisible(False)
@@ -125,22 +127,12 @@ class showCommitHistory(QWidget):
             item = QTableWidgetItem(f'{temp_message}')
             item.setFlags(item.flags() & ~Qt.ItemIsEditable)
             table_widget.setItem(row, graph_cnt + 1, item)
-
-            #for col in range(table_widget.columnCount()):
-            #    if col ==0:
-            #        item = QTableWidgetItem(f'{temp_graph}')    
-            #    elif col ==1:
-            #        item = QTableWidgetItem(f'{temp_hash}')
-            #    elif col ==2:
-            #        item = QTableWidgetItem(f'{temp_name}')
-            #    elif col==3:
-            #        item = QTableWidgetItem(f'{temp_message}')
-            #    item.setFlags(item.flags() & ~Qt.ItemIsEditable)
-            #    table_widget.setItem(row, col, item)
+    
             row += 1
         
 
-        self.setGeometry(100, 100, 1000, 1000)
+        self.setGeometry(100, 100, 1000, widget_width)
+        self.setFixedSize(1000,widget_width)
         self.show()
        
     def handle_cell_clicked(self, input_item, hash_list):
@@ -156,9 +148,17 @@ class showCommitHistory(QWidget):
     def get_max_graph(self, commit_log):
         max_graph = 0
         for log in commit_log:
+            count = 0
             temp_graph = log['commit_graph']
-            if max_graph < len(temp_graph):
-                max_graph = len(temp_graph)
+            for col in range(len(temp_graph)):
+                if temp_graph[col] == "|" or temp_graph[col] == "*" or temp_graph[col] == "/" or temp_graph[col] == "\\" or temp_graph[col] == "_":
+                    count += 1
+                elif temp_graph[col] == " ":
+                    if col+1 < len(temp_graph) and (temp_graph[col+1] == "|" or temp_graph[col+1] == "*" or temp_graph[col+1] == "/" or temp_graph[col+1] == "\\" or temp_graph[col+1] == "_"):
+                        count += 1
+
+            if max_graph < count:
+                max_graph = count
         return max_graph
     
     def get_hash_list(self, commit_log):
