@@ -113,6 +113,7 @@ class showCommitHistory(QWidget):
 
                     item = QTableWidgetItem(f'{graph_frag}')
                     item.setFlags(item.flags() & ~Qt.ItemIsEditable)
+                    item.setTextAlignment(Qt.AlignCenter)
                     table_widget.setItem(row, col, item)
                 else :
                     empty_string = ""
