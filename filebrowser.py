@@ -19,6 +19,27 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
         self.populate()
         self.setWindowTitle("Git Scroll")
 
+        # 추가 2
+        # 컨텍스트 메뉴 액션들을 생성합니다.
+        self.create_action = QtWidgets.QAction("Branch_Create", self)
+        self.create_action.triggered.connect(self.create_branch)
+
+        self.delete_action = QtWidgets.QAction("Branch_Delete", self)
+        self.delete_action.triggered.connect(self.delete_branch)
+
+        self.rename_action = QtWidgets.QAction("Branch_Rename", self)
+        self.rename_action.triggered.connect(self.rename_branch)
+
+        self.checkout_action = QtWidgets.QAction("Branch_Checkout", self)
+        self.checkout_action.triggered.connect(self.checkout_branch)        
+
+        self.treeView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.treeView.customContextMenuRequested.connect(self.context_menu)
+
+        # 추가 1
+        self.branch_label = QtWidgets.QLabel()
+        self.statusBar().addPermanentWidget(self.branch_label)
+
     def populate(self):
         path = "C:\Windows"
         self.model = GitFileState()
@@ -30,6 +51,66 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
         self.treeView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.treeView.customContextMenuRequested.connect(self.context_menu)
         # self.treeView.doubleClicked.connect(self.open_file)
+
+        # 추가 1
+        self.model.dataChanged.connect(self.update_branch_label)
+        self.treeView.clicked.connect(self.update_branch_label)
+        
+    def context_menu(self, point):
+        index = self.treeView.currentIndex()
+        index = index.siblingAtColumn(0)
+        filepath = self.model.filePath(index)
+
+        if not os.path.exists(filepath):
+            return
+
+        menu = QtWidgets.QMenu()
+
+        if is_git_repository(filepath) and os.path.isfile(filepath):
+            file_stat = get_git_status(filepath)
+
+            if file_stat == 'untracked' or file_stat == 'ignored':
+                git_add = menu.addAction("git_add")
+                git_add.triggered.connect(self.git_add)
+
+            elif file_stat == 'committed':
+                git_rm_cached = menu.addAction("git_rm_cached")
+                git_rm_cached.triggered.connect(self.git_rm_cached)
+                git_rm = menu.addAction("git_rm")
+                git_rm.triggered.connect(self.git_rm)
+                git_mv = menu.addAction("git_mv")
+                git_mv.triggered.connect(self.git_mv)
+
+            elif file_stat == 'modified':
+                git_add = menu.addAction("git_add")
+                git_add.triggered.connect(self.git_add)
+                git_restore = menu.addAction("git_restore")
+                git_restore.triggered.connect(self.git_restore)
+
+            elif file_stat == 'staged':
+                git_restore_staged = menu.addAction("git_restore_staged")
+                git_restore_staged.triggered.connect(self.git_restore_staged)
+
+        elif os.path.isdir(filepath):
+            if is_git_repository(filepath) is True:
+                git_commit = menu.addAction("git_commit")
+                git_commit.triggered.connect(self.git_commit)
+
+                # 추가 2
+                # 브랜치 관련 액션들을 메뉴에 추가합니다.
+                if is_root(filepath):
+                    menu.addAction(self.create_action)
+                    menu.addAction(self.delete_action)
+                    menu.addAction(self.rename_action)
+                    menu.addAction(self.checkout_action)
+            else:
+                git_init = menu.addAction("git_init")
+                git_init.triggered.connect(self.git_init)
+
+        cursor = QtGui.QCursor()
+        if menu.isEmpty():
+            return
+        menu.exec_(cursor.pos())
 
     def context_menu(self, point):
         menu = QtWidgets.QMenu()
@@ -75,10 +156,17 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
             if is_git_repository(filepath) is True:
                 git_commit = menu.addAction("git_commit")
                 git_commit.triggered.connect(self.git_commit)
+
+                # 추가 2
+                # 브랜치 관련 액션들을 메뉴에 추가합니다.
+                if is_root(filepath):
+                    menu.addAction(self.create_action)
+                    menu.addAction(self.delete_action)
+                    menu.addAction(self.rename_action)
+                    menu.addAction(self.checkout_action)                
             else:
                 git_init = menu.addAction("git_init")
                 git_init.triggered.connect(self.git_init)
-
 
         cursor = QtGui.QCursor()
         menu.exec_(cursor.pos())
@@ -265,7 +353,58 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
         self.new_CMC_window = CommitMessageError()
         self.new_CMC_window.show()
 
-        
+    # 추가 2
+    # 브랜치 생성 액션
+    def create_branch(self):
+        branch_name, ok = QtWidgets.QInputDialog.getText(self, "Create Branch", "Enter branch name:")
+        if ok and branch_name:
+            index = self.treeView.currentIndex()
+            filepath = self.model.filePath(index)
+            repo = git.Repo(filepath, search_parent_directories=True)
+            repo.git.branch(branch_name)
+
+    # 브랜치 삭제 액션
+    def delete_branch(self):
+        index = self.treeView.currentIndex()
+        filepath = self.model.filePath(index)
+        repo = git.Repo(filepath, search_parent_directories=True)
+        branches = [b.name for b in repo.branches]
+        branch, ok = QtWidgets.QInputDialog.getItem(self, "Delete Branch", "Select branch to delete:", branches)
+        if ok and branch:
+            repo.git.branch("-D", branch)
+
+    # 브랜치 이름 변경 액션
+    def rename_branch(self):
+        index = self.treeView.currentIndex()
+        filepath = self.model.filePath(index)
+        repo = git.Repo(filepath, search_parent_directories=True)
+        branches = [b.name for b in repo.branches]
+        branch, ok = QtWidgets.QInputDialog.getItem(self, "Rename Branch", "Select branch to rename:", branches)
+        if ok and branch:
+            new_name, ok = QtWidgets.QInputDialog.getText(self, "Rename Branch", "Enter new branch name:")
+            if ok and new_name:
+                repo.git.branch("-m", branch, new_name)
+
+    # 브랜치 체크아웃 액션
+    def checkout_branch(self):
+        index = self.treeView.currentIndex()
+        filepath = self.model.filePath(index)
+        repo = git.Repo(filepath, search_parent_directories=True)
+        branches = [b.name for b in repo.branches]
+        branch, ok = QtWidgets.QInputDialog.getItem(self, "Checkout Branch", "Select branch to checkout:", branches)
+        if ok and branch:
+            repo.git.checkout(branch)
+            self.update_branch_label(index)
+
+    # 추가 1
+    def update_branch_label(self, index):
+        filepath = self.model.filePath(index)
+        if is_git_repository(filepath):
+            repo = git.Repo(filepath, search_parent_directories=True)
+            branch = repo.active_branch.name
+            self.branch_label.setText(f"Current Branch: {branch}")
+        else:
+            self.branch_label.setText("Current Branch: N/A")
 
 class CommitableFileWindow(QDialog):
     ok_clicked = QtCore.pyqtSignal(bool)
