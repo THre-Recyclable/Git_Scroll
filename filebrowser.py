@@ -18,11 +18,8 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
         self.setupUi(self)
         self.populate()
         self.setWindowTitle("Git Scroll")
-        # 추가 3
-        self.context_menu_point = None
 
         # 추가 2
-        # 컨텍스트 메뉴 액션들을 생성합니다.
         self.create_action = QtWidgets.QAction("Branch_Create", self)
         self.create_action.triggered.connect(self.create_branch)
 
@@ -104,7 +101,6 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
                 git_commit.triggered.connect(self.git_commit)
 
                 # 추가 2
-                # 브랜치 관련 액션들을 메뉴에 추가합니다.
                 if is_root(filepath):
                     menu.addAction(self.create_action)
                     menu.addAction(self.delete_action)
@@ -116,13 +112,13 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
 
         cursor = QtGui.QCursor()
         menu.exec_(cursor.pos())
+        menu.clear()
 
     def open_file(self):
-
         index = self.treeView.currentIndex()
         filepath = self.model.filePath(index)
         os.startfile(filepath)
-    
+
     #git init
     def git_init(self):
         index = self.treeView.currentIndex()
@@ -300,7 +296,7 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
         self.new_CMC_window.show()
 
     # 추가 2
-    # 브랜치 생성 액션
+    # Create branch
     def create_branch(self):
         branch_name, ok = QtWidgets.QInputDialog.getText(self, "Create Branch", "Enter branch name:")
         if ok and branch_name:
@@ -312,7 +308,7 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
             except git.GitCommandError as e:
                 QtWidgets.QMessageBox.critical(self, "Error", str(e))
 
-    # 브랜치 삭제 액션
+    # Delete branch
     def delete_branch(self):
         index = self.treeView.currentIndex()
         filepath = self.model.filePath(index)
@@ -328,7 +324,7 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
                 except git.GitCommandError as e:
                     QtWidgets.QMessageBox.critical(self, "Error", str(e))
 
-    # 브랜치 이름 변경 액션
+    # Rename branch
     def rename_branch(self):
         index = self.treeView.currentIndex()
         filepath = self.model.filePath(index)
@@ -346,7 +342,7 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
                     except git.GitCommandError as e:
                         QtWidgets.QMessageBox.critical(self, "Error", str(e))
 
-    # 브랜치 체크아웃 액션
+    # Checkout branch
     def checkout_branch(self):
         index = self.treeView.currentIndex()
         filepath = self.model.filePath(index)
