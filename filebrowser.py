@@ -311,14 +311,13 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
             except git.GitCommandError as e:
                 QtWidgets.QMessageBox.critical(self, "Error", str(e))
 
-
     # Delete branch
     def delete_branch(self):
         index = self.treeView.currentIndex()
         filepath = self.model.filePath(index)
         repo = git.Repo(filepath, search_parent_directories=True)
         branches = [b.name for b in repo.branches]
-        branch, ok = QtWidgets.QInputDialog.getItem(self, "Delete Branch", "Select branch to delete:", branches)
+        branch, ok = QtWidgets.QInputDialog.getItem(self, "Delete Branch", "Select branch to delete:", branches, editable=False)
         if ok and branch:
             if branch == repo.active_branch.name:
                 QtWidgets.QMessageBox.warning(self, "Warning", "Cannot delete currently checked out branch.")
@@ -334,9 +333,12 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
         filepath = self.model.filePath(index)
         repo = git.Repo(filepath, search_parent_directories=True)
         branches = [b.name for b in repo.branches]
-        branch, ok = QtWidgets.QInputDialog.getItem(self, "Rename Branch", "Select branch to rename:", branches)
+        branch, ok = QtWidgets.QInputDialog.getItem(self, "Rename Branch", "Select branch to rename:", branches, editable=False)
         if ok and branch:
             new_name, ok = QtWidgets.QInputDialog.getText(self, "Rename Branch", "Enter new branch name:")
+            while ok and not new_name:
+                QtWidgets.QMessageBox.warning(self, "Error", "Branch name is required.")
+                new_name, ok = QtWidgets.QInputDialog.getText(self, "Rename Branch", "Enter new branch name:")
             if ok and new_name:
                 if branch == repo.active_branch.name:
                     QtWidgets.QMessageBox.warning(self, "Warning", "Cannot rename currently checked out branch.")
@@ -352,7 +354,7 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
         filepath = self.model.filePath(index)
         repo = git.Repo(filepath, search_parent_directories=True)
         branches = [b.name for b in repo.branches]
-        branch, ok = QtWidgets.QInputDialog.getItem(self, "Checkout Branch", "Select branch to checkout:", branches)
+        branch, ok = QtWidgets.QInputDialog.getItem(self, "Checkout Branch", "Select branch to checkout:", branches, editable=False)
         if ok and branch:
             if branch == repo.active_branch.name:
                 QtWidgets.QMessageBox.warning(self, "Warning", "Already on the selected branch.")
@@ -362,7 +364,6 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
                     self.update_branch_label(index)
                 except git.GitCommandError as e:
                     QtWidgets.QMessageBox.critical(self, "Error", str(e))
-
 
     # 추가 1
     def update_branch_label(self, index):
