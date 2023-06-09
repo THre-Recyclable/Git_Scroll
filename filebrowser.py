@@ -299,6 +299,9 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
     # Create branch
     def create_branch(self):
         branch_name, ok = QtWidgets.QInputDialog.getText(self, "Create Branch", "Enter branch name:")
+        while ok and not branch_name:
+            QtWidgets.QMessageBox.warning(self, "Error", "Branch name is required.")
+            branch_name, ok = QtWidgets.QInputDialog.getText(self, "Create Branch", "Enter branch name:")
         if ok and branch_name:
             index = self.treeView.currentIndex()
             filepath = self.model.filePath(index)
@@ -307,6 +310,7 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
                 repo.git.branch(branch_name)
             except git.GitCommandError as e:
                 QtWidgets.QMessageBox.critical(self, "Error", str(e))
+
 
     # Delete branch
     def delete_branch(self):
