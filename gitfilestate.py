@@ -28,7 +28,7 @@ class GitFileState(QtWidgets.QFileSystemModel):
         column = index.column()
         if column == super().columnCount():
             filepath = self.filePath(index.siblingAtColumn(0))
-            if is_git_repository(filepath) and self.isDir(index):
+            if is_git_repository(filepath) and self.isDir(index) and is_root(filepath):
                 repo = git.Repo(filepath, search_parent_directories=True)
                 branch = repo.active_branch.name
                 if role == QtCore.Qt.TextAlignmentRole:
@@ -45,8 +45,6 @@ class GitFileState(QtWidgets.QFileSystemModel):
                 return self.icons.get(file_status, super().data(index, role))
 
         return super().data(index, role)
-
-
 
 
 '''
