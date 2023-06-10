@@ -55,6 +55,7 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
         self.model.dataChanged.connect(self.update_branch_label)
         self.treeView.clicked.connect(self.update_branch_label)
 
+    '''
     def context_menu(self, point):
         menu = QtWidgets.QMenu()
         open = menu.addAction("Open")
@@ -113,6 +114,56 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
         cursor = QtGui.QCursor()
         menu.exec_(cursor.pos())
         menu.clear()
+    '''
+
+    def context_menu(self, point):
+        menu = QtWidgets.QMenu()
+        open = menu.addAction("Open")
+        open.triggered.connect(self.open_file)
+
+        index = self.treeView.currentIndex()
+        filepath = self.model.filePath(index)
+
+        if self.model.isDir(index):
+            if is_git_repository(filepath):
+                # Add branch-related actions
+                menu.addAction(self.create_action)
+                menu.addAction(self.delete_action)
+                menu.addAction(self.rename_action)
+                menu.addAction(self.checkout_action)
+            else:
+                git_init = menu.addAction("git_init")
+                git_init.triggered.connect(self.git_init)
+        else:
+            # Add file-related actions
+            file_stat = get_git_status(filepath)
+
+            if file_stat == 'untracked' or file_stat == 'ignored':
+                git_add = menu.addAction("git_add")
+                git_add.triggered.connect(self.git_add)
+
+            elif file_stat == 'committed':
+                git_rm_cached = menu.addAction("git_rm_cached")
+                git_rm_cached.triggered.connect(self.git_rm_cached)
+                git_rm = menu.addAction("git_rm")
+                git_rm.triggered.connect(self.git_rm)
+                git_mv = menu.addAction("git_mv")
+                git_mv.triggered.connect(self.git_mv)
+
+            elif file_stat == 'modified':
+                git_add = menu.addAction("git_add")
+                git_add.triggered.connect(self.git_add)
+                git_restore = menu.addAction("git_restore")
+                git_restore.triggered.connect(self.git_restore)
+
+            elif file_stat == 'staged':
+                git_restore_staged = menu.addAction("git_restore_staged")
+                git_restore_staged.triggered.connect(self.git_restore_staged)
+
+        cursor = QtGui.QCursor()
+        menu.exec_(cursor.pos())
+        menu.clear()
+
 
     def open_file(self):
         index = self.treeView.currentIndex()
@@ -371,7 +422,9 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
         if is_git_repository(filepath):
             repo = git.Repo(filepath, search_parent_directories=True)
             branch = repo.active_branch.name
-            self.branch_label.setText(f"Current Branch: {branch}")
+            root_index = index.siblingAtColumn(0)
+            root_path = self.model.filePath(root_index)
+            self.branch_label.setText(f"Current Branch ({root_path}): {branch}")
         else:
             self.branch_label.setText("Current Branch: N/A")
 
