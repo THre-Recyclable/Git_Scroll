@@ -55,67 +55,6 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
         self.model.dataChanged.connect(self.update_branch_label)
         self.treeView.clicked.connect(self.update_branch_label)
 
-    '''
-    def context_menu(self, point):
-        menu = QtWidgets.QMenu()
-        open = menu.addAction("Open")
-        open.triggered.connect(self.open_file)
-
-        index = self.treeView.currentIndex()
-        index = index.siblingAtColumn(0)
-        filepath = self.model.filePath(index)
-
-        # point = QtGui.QCursor.pos()
-        # point = self.treeView.mapFromGlobal(point)
-        # index = self.treeView.indexAt(point)
-        # name_index = index.siblingAtColumn(1)
-        # filepath = self.model.filePath(name_index)
-
-        if is_git_repository(filepath) and os.path.isfile(filepath):
-            file_stat = get_git_status(filepath)
-
-            if file_stat == 'untracked' or file_stat == 'ignored':
-                git_add = menu.addAction("git_add")
-                git_add.triggered.connect(self.git_add)
-
-            elif file_stat == 'committed':
-                git_rm_cached = menu.addAction("git_rm_cached")
-                git_rm_cached.triggered.connect(self.git_rm_cached)
-                git_rm = menu.addAction("git_rm")
-                git_rm.triggered.connect(self.git_rm)
-                git_mv = menu.addAction("git_mv")
-                git_mv.triggered.connect(self.git_mv)
-
-            elif file_stat == 'modified':
-                git_add = menu.addAction("git_add")
-                git_add.triggered.connect(self.git_add)
-                git_restore = menu.addAction("git_restore")
-                git_restore.triggered.connect(self.git_restore)
-
-            elif file_stat == 'staged':
-                git_restore_staged = menu.addAction("git_restore_staged")
-                git_restore_staged.triggered.connect(self.git_restore_staged)
-
-        elif os.path.isdir(filepath):
-            if is_git_repository(filepath) is True:
-                git_commit = menu.addAction("git_commit")
-                git_commit.triggered.connect(self.git_commit)
-
-                # 추가 2
-                if is_root(filepath):
-                    menu.addAction(self.create_action)
-                    menu.addAction(self.delete_action)
-                    menu.addAction(self.rename_action)
-                    menu.addAction(self.checkout_action)                
-            else:
-                git_init = menu.addAction("git_init")
-                git_init.triggered.connect(self.git_init)
-
-        cursor = QtGui.QCursor()
-        menu.exec_(cursor.pos())
-        menu.clear()
-    '''
-
     def context_menu(self, point):
         menu = QtWidgets.QMenu()
         open = menu.addAction("Open")
