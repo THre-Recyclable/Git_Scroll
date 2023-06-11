@@ -32,8 +32,8 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
         self.checkout_action = QtWidgets.QAction("Branch_Checkout", self)
         self.checkout_action.triggered.connect(self.checkout_branch)        
 
-        self.treeView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.treeView.customContextMenuRequested.connect(self.context_menu)
+        # self.treeView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        # self.treeView.customContextMenuRequested.connect(self.context_menu)
 
         # 추가 1
         self.branch_label = QtWidgets.QLabel()
