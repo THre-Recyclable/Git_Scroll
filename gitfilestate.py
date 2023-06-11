@@ -1,12 +1,14 @@
 from PyQt5 import QtWidgets
 from PyQt5 import QtGui
 from PyQt5 import QtCore
+import git
 from status import *
+import os
 
 class GitFileState(QtWidgets.QFileSystemModel):
     def __init__(self, parent=None):
         super(GitFileState, self).__init__(parent)
-    
+        
         self.icons = {
             "untracked": QtGui.QIcon("resources/untracked_icon.PNG"),
             "modified": QtGui.QIcon("resources/modified_icon.PNG"),
@@ -14,32 +16,30 @@ class GitFileState(QtWidgets.QFileSystemModel):
             "committed": QtGui.QIcon("resources/committed_icon.PNG")
         }
 
-    def data(self, index, role):
-        if role == QtCore.Qt.DecorationRole and index.column() == 0:
+    def columnCount(self, parent=QtCore.QModelIndex()):
+        return super().columnCount(parent)
+
+    def headerData(self, section, orientation, role=QtCore.Qt.DisplayRole):
+        return super().headerData(section, orientation, role)
+
+    def data(self, index, role=QtCore.Qt.DisplayRole):
+        column = index.column()
+        if column == super().columnCount():
+            filepath = self.filePath(index.siblingAtColumn(0))
+            if is_git_repository(filepath) and self.isDir(index) and is_root(filepath):
+                repo = git.Repo(filepath, search_parent_directories=True)
+                branch = repo.active_branch.name
+                if role == QtCore.Qt.TextAlignmentRole:
+                    return int(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
+                return branch
+            else:
+                return ""
+        elif role == QtCore.Qt.DecorationRole and column == 0:
             file_info = self.fileInfo(index)
             filepath = self.filePath(index)
 
-            if os.path.exists(filepath) and is_git_repository(filepath) and is_root(filepath) is False:
-                # print('calling get status function...')
-                # print('calling get status function, path is: ' + filepath)
+            if os.path.exists(filepath) and is_git_repository(filepath) and not is_root(filepath):
                 file_status = get_git_status(filepath)
-                # print('retrieved: ' + file_status)
                 return self.icons.get(file_status, super().data(index, role))
 
-            # if file_info.isFile():
-            #     filepath = self.filePath(index)
-            #
-            #     if os.path.exists(filepath) and is_git_repository(filepath):
-            #         filepath = filepath.replace('\\', '/')
-            #         file_status = status_cache.get(filepath, 'committed')
-            #         return self.icons.get(file_status, super().data(index, role))
-            #
-            # elif file_info.isDir():
-            #     dirpath = self.filePath(index)
-            #
-            #     if os.path.exists(dirpath) and is_git_repository(dirpath) and is_root(dirpath) is False:
-            #         dir_status = get_dir_status(dirpath)
-            #         print('value retrieved: ' + dir_status)
-            #         return self.icons.get(dir_status, super().data(index, role))
-    
         return super().data(index, role)

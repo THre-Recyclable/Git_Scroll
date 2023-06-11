@@ -49,7 +49,15 @@ def process_staged_directories(dirpath):
 
 
 def get_git_status(path):
-    repo = git.Repo(path, search_parent_directories=True)
+    # repo = git.Repo(path, search_parent_directories=True)
+    if not is_git_repository(path):
+        return None
+
+    try:
+        repo = git.Repo(path, search_parent_directories=True)
+    except git.exc.InvalidGitRepositoryError:
+        return None
+
     repo_path = repo.working_tree_dir
     path = path.replace('\\', '/')
     path = path.replace('"', "")
