@@ -360,20 +360,15 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
     def update_branch_label(self, index):
         filepath = self.model.filePath(index)
         if is_git_repository(filepath):
-            if filepath in self.branch_cache:  # 캐시에 이미 저장된 브랜치가 있는 경우
-                branch = self.branch_cache[filepath]
-            else:
-                repo = git.Repo(filepath, search_parent_directories=True)
-                branch = repo.active_branch.name
-                self.branch_cache[filepath] = branch  # 캐시에 브랜치 저장
-
+            repo = git.Repo(filepath, search_parent_directories=True)
+            branch = repo.active_branch.name
             root_index = index.siblingAtColumn(0)
             root_path = self.model.filePath(root_index)
-            self.branch_label.setText("")
-            # self.branch_label.setText(f"Current Branch ({root_path}): {branch}")
+            self.branch_label.setText(f"Current Path\t: {root_path}\nCurrent Branch\t: {branch}")
         else:
             self.branch_label.setText("")
-            # self.branch_label.setText("Current Branch: N/A")
+            # self.branch_label.setText("Current Branch\t: N/A")
+
 
 class CommitableFileWindow(QDialog):
     ok_clicked = QtCore.pyqtSignal(bool)

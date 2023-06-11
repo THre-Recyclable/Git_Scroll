@@ -17,11 +17,9 @@ class GitFileState(QtWidgets.QFileSystemModel):
         }
 
     def columnCount(self, parent=QtCore.QModelIndex()):
-        return super().columnCount(parent) + 1
+        return super().columnCount(parent)
 
     def headerData(self, section, orientation, role=QtCore.Qt.DisplayRole):
-        if section == super().columnCount():
-            return "Branch"
         return super().headerData(section, orientation, role)
 
     def data(self, index, role=QtCore.Qt.DisplayRole):
