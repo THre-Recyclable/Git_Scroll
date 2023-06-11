@@ -357,18 +357,6 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
                 except git.GitCommandError as e:
                     QtWidgets.QMessageBox.critical(self, "Error", str(e))
 
-    # 추가 1
-    # def update_branch_label(self, index):
-    #     filepath = self.model.filePath(index)
-    #     if is_git_repository(filepath):
-    #         repo = git.Repo(filepath, search_parent_directories=True)
-    #         branch = repo.active_branch.name
-    #         root_index = index.siblingAtColumn(0)
-    #         root_path = self.model.filePath(root_index)
-    #         self.branch_label.setText(f"Current Branch ({root_path}): {branch}")
-    #     else:
-    #         self.branch_label.setText("Current Branch: N/A")
-
     def update_branch_label(self, index):
         filepath = self.model.filePath(index)
         if is_git_repository(filepath):
@@ -381,9 +369,11 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
 
             root_index = index.siblingAtColumn(0)
             root_path = self.model.filePath(root_index)
-            self.branch_label.setText(f"Current Branch ({root_path}): {branch}")
+            self.branch_label.setText("")
+            # self.branch_label.setText(f"Current Branch ({root_path}): {branch}")
         else:
-            self.branch_label.setText("Current Branch: N/A")
+            self.branch_label.setText("")
+            # self.branch_label.setText("Current Branch: N/A")
 
 class CommitableFileWindow(QDialog):
     ok_clicked = QtCore.pyqtSignal(bool)
