@@ -67,9 +67,9 @@ class showCommitHistory(QWidget):
         table_widget.setColumnCount(graph_cnt + 2)
         table_widget.setRowCount(len(commit_log))
 
-        widget_width = 50*graph_cnt + 600
+        widget_width = 50*graph_cnt + 1100
 
-        table_widget.setGeometry(0,0,1000,widget_width)
+        table_widget.setGeometry(0,0,widget_width, 1000)
         
         table_widget.setStyleSheet("QTableWidget { border: none; }")
         table_widget.horizontalHeader().setVisible(False)
@@ -82,7 +82,7 @@ class showCommitHistory(QWidget):
         #table_widget.setColumnWidth(2,100)
         #table_widget.setColumnWidth(3,400)
         table_widget.setColumnWidth(graph_cnt, 100)
-        table_widget.setColumnWidth(graph_cnt + 1, 500)
+        table_widget.setColumnWidth(graph_cnt + 1, 1000)
         
         hash_list = self.get_hash_list(commit_log)
 
@@ -132,8 +132,8 @@ class showCommitHistory(QWidget):
             row += 1
         
 
-        self.setGeometry(100, 100, 1000, widget_width)
-        self.setFixedSize(1000,widget_width)
+        self.setGeometry(100, 100, widget_width, 1000)
+        self.setFixedSize(widget_width, 1000)
         self.show()
        
     def handle_cell_clicked(self, input_item, hash_list):
@@ -141,7 +141,7 @@ class showCommitHistory(QWidget):
         
         item = hash_list[row]
         #item = input_item.text()
-        if item is not None:
+        if item != '':
             commit_info = get_commit_info(item)
             self.new_window = showCommitInfo(commit_info)
             self.new_window.show()
