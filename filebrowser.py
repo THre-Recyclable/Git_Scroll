@@ -31,7 +31,10 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
         self.rename_action.triggered.connect(self.rename_branch)
 
         self.checkout_action = QtWidgets.QAction("Branch_Checkout", self)
-        self.checkout_action.triggered.connect(self.checkout_branch)        
+        self.checkout_action.triggered.connect(self.checkout_branch)
+
+        self.merge_action = QtWidgets.QAction("Branch_Merge", self)
+        self.merge_action.triggered.connect(self.merge_branch)
 
         # self.treeView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         # self.treeView.customContextMenuRequested.connect(self.context_menu)
@@ -72,6 +75,7 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
                 menu.addAction(self.delete_action)
                 menu.addAction(self.rename_action)
                 menu.addAction(self.checkout_action)
+                menu.addAction(self.merge_action)
                 commit_history = menu.addAction("Commit History")
                 commit_history.triggered.connect(self.commit_history)
 
@@ -360,7 +364,12 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
         index = self.treeView.currentIndex()
         filepath = self.model.filePath(index)
         repo = git.Repo(filepath, search_parent_directories=True)
-        branches = [b.name for b in repo.branches]
+        branches = [b.name for b in repo.branches if b.name != repo.active_branch.name]
+
+        if not branches:
+            QtWidgets.QMessageBox.warning(self, "Warning", "No other branches to checkout.")
+            return
+
         branch, ok = QtWidgets.QInputDialog.getItem(self, "Checkout Branch", "Select branch to checkout:", branches, editable=False)
         if ok and branch:
             if branch == repo.active_branch.name:
@@ -371,6 +380,32 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
                     self.update_branch_label(index)
                 except git.GitCommandError as e:
                     QtWidgets.QMessageBox.critical(self, "Error", str(e))
+
+    # Merge branch
+    def merge_branch(self):
+        index = self.treeView.currentIndex()
+        filepath = self.model.filePath(index)
+        repo = git.Repo(filepath, search_parent_directories=True)
+        current_branch = repo.active_branch.name
+        branches = [b.name for b in repo.branches if b.name != current_branch]
+
+        if not branches:
+            QtWidgets.QMessageBox.warning(self, "Warning", "No other branches to merge.")
+            return
+
+        branch, ok = QtWidgets.QInputDialog.getItem(self, "Merge Branch", "Select branch to merge:", branches,
+                                                    editable=False)
+        if ok and branch:
+            if branch == current_branch:
+                QtWidgets.QMessageBox.warning(self, "Warning", "Already on the selected branch.")
+            else:
+                try:
+                    repo.git.merge(branch)
+                    QtWidgets.QMessageBox.information(self, "Success",
+                                                      f"Merged branch '{branch}' into '{current_branch}' successfully.")
+                except git.GitCommandError as e:
+                    unmerged_paths = "\n".join(f"{path}" for path, _ in repo.index.unmerged_blobs().items())
+                    QtWidgets.QMessageBox.critical(self, "Error", f"{str(e)}\n\nUnmerged paths:\n{unmerged_paths}")
 
     def update_branch_label(self, index):
         filepath = self.model.filePath(index)
