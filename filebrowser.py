@@ -38,6 +38,7 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
         # 추가 1
         self.branch_label = QtWidgets.QLabel()
         self.statusBar().addPermanentWidget(self.branch_label)
+        self.branch_cache = {}  # 브랜치 캐시 추가        
 
     def populate(self):
         path = "C:\Windows"
@@ -102,6 +103,7 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
         cursor = QtGui.QCursor()
         menu.exec_(cursor.pos())
         menu.clear()
+        self.update_branch_label(index)  # 브랜치 레이블 업데이트
 
 
     def open_file(self):
@@ -356,11 +358,27 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
                     QtWidgets.QMessageBox.critical(self, "Error", str(e))
 
     # 추가 1
+    # def update_branch_label(self, index):
+    #     filepath = self.model.filePath(index)
+    #     if is_git_repository(filepath):
+    #         repo = git.Repo(filepath, search_parent_directories=True)
+    #         branch = repo.active_branch.name
+    #         root_index = index.siblingAtColumn(0)
+    #         root_path = self.model.filePath(root_index)
+    #         self.branch_label.setText(f"Current Branch ({root_path}): {branch}")
+    #     else:
+    #         self.branch_label.setText("Current Branch: N/A")
+
     def update_branch_label(self, index):
         filepath = self.model.filePath(index)
         if is_git_repository(filepath):
-            repo = git.Repo(filepath, search_parent_directories=True)
-            branch = repo.active_branch.name
+            if filepath in self.branch_cache:  # 캐시에 이미 저장된 브랜치가 있는 경우
+                branch = self.branch_cache[filepath]
+            else:
+                repo = git.Repo(filepath, search_parent_directories=True)
+                branch = repo.active_branch.name
+                self.branch_cache[filepath] = branch  # 캐시에 브랜치 저장
+
             root_index = index.siblingAtColumn(0)
             root_path = self.model.filePath(root_index)
             self.branch_label.setText(f"Current Branch ({root_path}): {branch}")
