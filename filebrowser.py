@@ -72,6 +72,11 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
                 menu.addAction(self.delete_action)
                 menu.addAction(self.rename_action)
                 menu.addAction(self.checkout_action)
+                commit_history = menu.addAction("Commit History")
+                commit_history.triggered.connect(self.commit_history)
+
+                git_commit = menu.addAction("git_commit")
+                git_commit.triggered.connect(self.git_commit)
             else:
                 git_init = menu.addAction("git_init")
                 git_init.triggered.connect(self.git_init)
@@ -100,18 +105,6 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
             elif file_stat == 'staged':
                 git_restore_staged = menu.addAction("git_restore_staged")
                 git_restore_staged.triggered.connect(self.git_restore_staged)
-
-        elif os.path.isdir(filepath):
-            
-            if is_git_repository(filepath) is True:
-                commit_history = menu.addAction("Commit History")
-                commit_history.triggered.connect(self.commit_history)
-
-                git_commit = menu.addAction("git_commit")
-                git_commit.triggered.connect(self.git_commit)
-            else:
-                git_init = menu.addAction("git_init")
-                git_init.triggered.connect(self.git_init)
 
 
         cursor = QtGui.QCursor()
