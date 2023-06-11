@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import QDialog
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QFont
 import sys
+import getpass
 
 from commitHistory import *
 from ui import file
@@ -35,6 +36,9 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
 
         self.merge_action = QtWidgets.QAction("Branch_Merge", self)
         self.merge_action.triggered.connect(self.merge_branch)
+
+        self.clone_action = QtWidgets.QAction("git_clone", self)
+        self.clone_action.triggered.connect(self.clone_repo)
 
         # self.treeView.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         # self.treeView.customContextMenuRequested.connect(self.context_menu)
@@ -81,9 +85,14 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
 
                 git_commit = menu.addAction("git_commit")
                 git_commit.triggered.connect(self.git_commit)
+
+                menu.addAction(self.clone_action)
+
             else:
                 git_init = menu.addAction("git_init")
                 git_init.triggered.connect(self.git_init)
+
+                menu.addAction(self.clone_action)
         else:
             # Add file-related actions
             file_stat = get_git_status(filepath)
@@ -407,6 +416,16 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
                     unmerged_paths = "\n".join(f"{path}" for path, _ in repo.index.unmerged_blobs().items())
                     QtWidgets.QMessageBox.critical(self, "Error", f"{str(e)}\n\nUnmerged paths:\n{unmerged_paths}")
 
+    def clone_repo(self):
+        index = self.treeView.currentIndex()
+        filepath = self.model.filePath(index)
+        clone_dialog = CloneDialog(filepath)
+        if clone_dialog.exec_() == QtWidgets.QDialog.Accepted:
+            QtWidgets.QMessageBox.information(self, "Success", f"Repository cloned successfully.")
+        else:
+            QtWidgets.QMessageBox.critical(self, "Error", "Failed to clone the repository.")
+
+
     def update_branch_label(self, index):
         filepath = self.model.filePath(index)
         if is_git_repository(filepath):
@@ -558,6 +577,61 @@ class CommitMessageError(QDialog):
 
         font = QFont("Arial", 10)
         self.setFont(font)
+
+
+class CloneDialog(QtWidgets.QDialog):
+    def __init__(self, filepath):
+        super().__init__()
+        self.filepath = filepath
+        self.url_input = QtWidgets.QLineEdit(self)
+        self.id_input = QtWidgets.QLineEdit(self)
+        self.token_input = QtWidgets.QLineEdit(self)
+        self.confirm_button = QtWidgets.QPushButton('Clone', self)
+        self.layout = QtWidgets.QVBoxLayout(self)
+        self.init_ui()
+
+    def init_ui(self):
+        self.layout.addWidget(QtWidgets.QLabel('Repository URL:', self))
+        self.layout.addWidget(self.url_input)
+
+        self.layout.addWidget(QtWidgets.QLabel('ID (only for private repository):', self))
+        self.layout.addWidget(self.id_input)
+
+        self.layout.addWidget(QtWidgets.QLabel('Token (only for private repository):', self))
+        self.layout.addWidget(self.token_input)
+
+        self.confirm_button.clicked.connect(self.clone_repository)
+        self.layout.addWidget(self.confirm_button)
+
+    def clone_repository(self):
+        url = self.url_input.text().strip()
+        id_ = self.id_input.text().strip()
+        token = self.token_input.text().strip()
+
+        if not url:
+            QtWidgets.QMessageBox.warning(self, "Warning", "Repository URL is required.")
+            return
+
+        repo_name = url.split("/")[-1]
+        if ".git" in repo_name:
+            repo_name = repo_name.replace(".git", "")
+        clone_dir = self.filepath
+
+        try:
+            if id_ and token:
+
+                https_url = url[:8] + id_ + ':' + token + '@' + url[8:]
+                git.Repo.clone_from(https_url, os.path.join(clone_dir, repo_name), env={"GIT_ASKPASS": token})
+
+                with open(os.path.join(clone_dir, repo_name, "credentials.txt"), "w") as file:
+                    file.write(f"{id_}\n{token}")
+            else:
+                git.Repo.clone_from(url, os.path.join(clone_dir, repo_name))
+
+            self.accept()
+        except Exception as e:
+            QtWidgets.QMessageBox.critical(self, "Error", str(e))
+            self.reject()
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication([])
