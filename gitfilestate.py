@@ -15,6 +15,8 @@ class GitFileState(QtWidgets.QFileSystemModel):
             "staged": QtGui.QIcon("resources/staged_icon.PNG"),
             "committed": QtGui.QIcon("resources/committed_icon.PNG")
         }
+        
+        self.file_status_cache = {}  # 파일 상태 캐시
 
     def columnCount(self, parent=QtCore.QModelIndex()):
         return super().columnCount(parent) + 1
@@ -41,7 +43,16 @@ class GitFileState(QtWidgets.QFileSystemModel):
             filepath = self.filePath(index)
 
             if os.path.exists(filepath) and is_git_repository(filepath) and not is_root(filepath):
-                file_status = get_git_status(filepath)
+                file_status = self.get_file_status(filepath)  # 파일 상태 캐시 사용
                 return self.icons.get(file_status, super().data(index, role))
 
         return super().data(index, role)
+
+    def get_file_status(self, filepath):
+        if filepath in self.file_status_cache:  # 캐시에 파일 상태가 이미 저장된 경우
+            return self.file_status_cache[filepath]
+        
+        file_status = get_git_status(filepath)  # 파일 상태 계산
+        self.file_status_cache[filepath] = file_status  # 캐시에 파일 상태 저장
+        
+        return file_status
