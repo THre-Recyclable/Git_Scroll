@@ -414,6 +414,7 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
                 except git.GitCommandError as e:
                     unmerged_paths = "\n".join(f"{path}" for path, _ in repo.index.unmerged_blobs().items())
                     QtWidgets.QMessageBox.critical(self, "Error", f"{str(e)}\n\nUnmerged paths:\n{unmerged_paths}")
+                    repo.git.merge('--abort')
 
     def clone_repo(self):
         index = self.treeView.currentIndex()
