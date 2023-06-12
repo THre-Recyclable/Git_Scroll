@@ -29,6 +29,10 @@ https://github.com/Hshadow/file-browser-with-python-PyQt5
 
 - **`requirements.py`**: 필요한 라이브러리를 설치하는 script입니다.
 
+- **`commitHistory.py`**: commit history의 출력에 필요한 함수 및 class가 정의되어 있습니다.
+
+- **`credentials.txt`**: private repository를 clone할 때 사용한 ID 및 personal access token이 여기에 저장됩니다. 가급적 내용을 임의로 수정하지 않기를 권장합니다.
+
 
 
 
@@ -40,7 +44,10 @@ https://github.com/Hshadow/file-browser-with-python-PyQt5
 
 - 컨텍스트 메뉴: 파일이나 폴더를 마우스 오른쪽 버튼으로 클릭하면 직접 실행할 수 있는 다양한 Git 명령을 제공하는 메뉴가 열립니다.
 
-- Git 명령: 메뉴는 선택된 파일의 Git 상태에 따라 다른 Git 명령을 제공합니다. 예를 들어, **`git add`**, **`git restore`**, **`git rm`**, **`git mv`** 등의 명령을 실행할 수 있습니다.
+- Git 명령: 메뉴는 선택된 파일의 Git 상태에 따라 다른 Git 명령을 제공합니다. 예를 들어, **`git add`**, **`git restore`**, **`git rm`**, **`git mv`** 등의 명령을 실행할 수 있습니다. 또한 일부 branch 관련 명령어를 사용할 수 있습니다.
+
+- Current branch: 선택한 디렉토리가 git repository라면, current branch를 우측 하단부에 나타냅니다.
+<img width="377" alt="current branch" src="https://github.com/THre-Recyclable/Git_Scroll/assets/62564727/27ed1b4f-01fe-49d3-a3c6-c2004b807355">
 
 Git_Scroll은 선택된 것이 파일인지 디렉토리인지에 따라, 만약 파일이라면 파일의 상태에 따라 실행 가능한 메뉴가 다릅니다.
 모든 파일은 기본적으로 Open이 가능합니다(Git repository가 아니더라도).
@@ -49,6 +56,18 @@ Git_Scroll은 선택된 것이 파일인지 디렉토리인지에 따라, 만약
 - `git_init`: 선택된 디렉토리에 대해 `git init`을 실행하여 git repository를 초기화합니다. git repository에 속하지 않는 디렉토리를 대상으로만 실행이 가능합니다.
 
 - `git_commit`: 선택된 디렉토리가 git repository에 속할 때 실행이 가능합니다. 현재 선택된 디렉토리의 git repository에 대해서 `git commit`을 실행합니다. 현재 staged인 파일의 리스트를 보여주며, 만약 이 파일이 하나도 없거나 commit message가 비어 있다면 실행을 취소합니다.
+
+- `branch_create`: 새로운 branch를 생성합니다. 이미 존재하는 branch name이거나, 공백이면 작동하지 않습니다.
+
+- `branch_delete`: 선택한 branch를 삭제합니다. current branch는 삭제할 수 없습니다.
+
+- `branch_rename`: branch의 이름을 바꿉니다. current branch의 이름은 바꿀 수 없습니다.
+
+- `branch_merge`: current branch를 기준으로, 선택한 branch를 merge합니다. current branch 외에 다른 branch가 없다면 실행되지 않습니다. conflict로 인해 merge가 실패했다면, unmerged path를 보여줍니다.
+
+- `commit history`: 선택한 git repository의 current branch를 기준으로 commit history를 table의 형태로 출력합니다. 각 열을 클릭하면 해당 commit object의 detailed information을 보여줍니다.
+
+- `git_clone`: github repository를 clone해옵니다. HTTPS 링크를 대상으로만 작동하며, private repository를 clone할 경우 URL 외에도 ID 및 personal access token이 필요합니다. clone에 성공하면, 사용한 ID 및 personal access token을 저장하여 다음에 `git_clone`을 실행할 때 `Try with saved credentials` 옵션을 사용하여 ID와 token을 입력하는 과정을 생략할 수 있습니다.
 
 #### 파일을 선택했을 경우
 
