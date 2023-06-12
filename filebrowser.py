@@ -96,7 +96,7 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
         else:
             # Add file-related actions
             file_stat = get_git_status(filepath)
-            
+
             if file_stat == 'untracked' or file_stat == 'ignored':
                 git_add = menu.addAction("git_add")
                 git_add.triggered.connect(self.git_add)
@@ -119,34 +119,30 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
                 git_restore_staged = menu.addAction("git_restore_staged")
                 git_restore_staged.triggered.connect(self.git_restore_staged)
 
-
         cursor = QtGui.QCursor()
         menu.exec_(cursor.pos())
         menu.clear()
         self.update_branch_label(index)  # 브랜치 레이블 업데이트
 
-
     def open_file(self):
         index = self.treeView.currentIndex()
         filepath = self.model.filePath(index)
         os.startfile(filepath)
-    
+
     def commit_history(self):
         index = self.treeView.currentIndex()
         filepath = self.model.filePath(index)
         self.new_window = showCommitHistory(filepath)
         self.new_window.show()
 
-
-
-    #git init
+    # git init
     def git_init(self):
         index = self.treeView.currentIndex()
         filepath = self.model.filePath(index)
         os.chdir(filepath)
         os.system('git init')
 
-    #git add
+    # git add
     def git_add(self):
         index = self.treeView.currentIndex()
         filepath = self.model.filePath(index)
@@ -159,7 +155,7 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
         os.system(Str)
         calculate_status(filepath)
 
-    #git restore
+    # git restore
     def git_restore(self):
         index = self.treeView.currentIndex()
         filepath = self.model.filePath(index)
@@ -170,7 +166,7 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
         os.system(Str)
         calculate_status(filepath)
 
-    #git restore staged
+    # git restore staged
     def git_restore_staged(self):
         index = self.treeView.currentIndex()
         filepath = self.model.filePath(index)
@@ -181,7 +177,7 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
         os.system(Str)
         calculate_status(filepath)
 
-    #git rm cached
+    # git rm cached
     def git_rm_cached(self):
         index = self.treeView.currentIndex()
         filepath = self.model.filePath(index)
@@ -192,7 +188,7 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
         os.system(Str)
         calculate_status(filepath)
 
-    #git rm
+    # git rm
     def git_rm(self):
         index = self.treeView.currentIndex()
         filepath = self.model.filePath(index)
@@ -204,8 +200,8 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
         os.system(Str)
         calculate_status(repo.working_tree_dir)
 
-    #git mv
-    def git_mv(self):        
+    # git mv
+    def git_mv(self):
         self.new_window = ChangeName()
         self.new_window.name_entered.connect(self.handle_name_entered)
         self.new_window.show()
@@ -218,7 +214,7 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
         name = self.model.fileName(index.siblingAtColumn(0))
         file_list = self.get_file_in_directory(Ppath)
         file_list_check_result = self.file_list_check(file_list, changed_name)
-        if changed_name =="" or file_list_check_result == False:
+        if changed_name == "" or file_list_check_result == False:
             self.name_change_error()
         else:
             os.chdir(Ppath)
@@ -233,19 +229,19 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
                 file_path = os.path.join(root, file)
                 file_list.append(file_path)
         return file_list
-    
+
     def file_list_check(self, file_list, changed_name):
         for file in file_list:
             file_name = os.path.basename(file)
             if file_name == changed_name:
                 return False
         return True
+
     def name_change_error(self):
         self.new_window = NameChangeError()
         self.new_window.show()
-    
 
-    #git commit
+    # git commit
     def git_commit(self):
         self.file_list = QListWidget(self)
 
@@ -337,7 +333,8 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
         filepath = self.model.filePath(index)
         repo = git.Repo(filepath, search_parent_directories=True)
         branches = [b.name for b in repo.branches]
-        branch, ok = QtWidgets.QInputDialog.getItem(self, "Delete Branch", "Select branch to delete:", branches, editable=False)
+        branch, ok = QtWidgets.QInputDialog.getItem(self, "Delete Branch", "Select branch to delete:", branches,
+                                                    editable=False)
         if ok and branch:
             if branch == repo.active_branch.name:
                 QtWidgets.QMessageBox.warning(self, "Warning", "Cannot delete currently checked out branch.")
@@ -353,7 +350,8 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
         filepath = self.model.filePath(index)
         repo = git.Repo(filepath, search_parent_directories=True)
         branches = [b.name for b in repo.branches]
-        branch, ok = QtWidgets.QInputDialog.getItem(self, "Rename Branch", "Select branch to rename:", branches, editable=False)
+        branch, ok = QtWidgets.QInputDialog.getItem(self, "Rename Branch", "Select branch to rename:", branches,
+                                                    editable=False)
         if ok and branch:
             new_name, ok = QtWidgets.QInputDialog.getText(self, "Rename Branch", "Enter new branch name:")
             while ok and not new_name:
@@ -379,7 +377,8 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
             QtWidgets.QMessageBox.warning(self, "Warning", "No other branches to checkout.")
             return
 
-        branch, ok = QtWidgets.QInputDialog.getItem(self, "Checkout Branch", "Select branch to checkout:", branches, editable=False)
+        branch, ok = QtWidgets.QInputDialog.getItem(self, "Checkout Branch", "Select branch to checkout:", branches,
+                                                    editable=False)
         if ok and branch:
             if branch == repo.active_branch.name:
                 QtWidgets.QMessageBox.warning(self, "Warning", "Already on the selected branch.")
@@ -422,9 +421,6 @@ class Browser(file.Ui_MainWindow, QtWidgets.QMainWindow):
         clone_dialog = CloneDialog(filepath)
         if clone_dialog.exec_() == QtWidgets.QDialog.Accepted:
             QtWidgets.QMessageBox.information(self, "Success", f"Repository cloned successfully.")
-        else:
-            QtWidgets.QMessageBox.critical(self, "Error", "Failed to clone the repository.")
-
 
     def update_branch_label(self, index):
         filepath = self.model.filePath(index)
@@ -536,12 +532,13 @@ class ChangeName(QWidget):
         self.name_entered.emit(changed_name)
         self.close()
 
+
 class NameChangeError(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
 
         self.setWindowTitle("Name Change Error")
-        self.setGeometry(300,200,400,100)
+        self.setGeometry(300, 200, 400, 100)
 
         self.layout = QVBoxLayout()
 
@@ -557,12 +554,13 @@ class NameChangeError(QDialog):
         font = QFont("Arial", 10)
         self.setFont(font)
 
+
 class CommitMessageError(QDialog):
-    def __init__(self, parent = None):
+    def __init__(self, parent=None):
         super().__init__(parent)
 
         self.setWindowTitle("Commit Message Error")
-        self.setGeometry(300,200,400,100)
+        self.setGeometry(300, 200, 400, 100)
 
         self.layout = QVBoxLayout()
 
@@ -584,8 +582,6 @@ class CloneDialog(QtWidgets.QDialog):
         super().__init__()
         self.filepath = filepath
         self.url_input = QtWidgets.QLineEdit(self)
-        self.id_input = QtWidgets.QLineEdit(self)
-        self.token_input = QtWidgets.QLineEdit(self)
         self.confirm_button = QtWidgets.QPushButton('Clone', self)
         self.layout = QtWidgets.QVBoxLayout(self)
         self.init_ui()
@@ -593,45 +589,108 @@ class CloneDialog(QtWidgets.QDialog):
     def init_ui(self):
         self.layout.addWidget(QtWidgets.QLabel('Repository URL:', self))
         self.layout.addWidget(self.url_input)
+        self.confirm_button.clicked.connect(self.clone_repository)
+        self.layout.addWidget(self.confirm_button)
 
+    def clone_repository(self):
+        url = self.url_input.text().strip()
+
+        if not url:
+            QtWidgets.QMessageBox.warning(self, "Warning", "Repository URL is required.")
+            return
+
+        repo_name = url.split("/")[-1]  # URL에서 저장소 이름 추출
+        if ".git" in repo_name:
+            repo_name = repo_name.replace(".git", "")
+        clone_dir = self.filepath  # 받은 파일 경로를 클론 경로로 사용
+
+        # Try cloning the repository with the provided URL
+        try:
+            git.Repo.clone_from(url, os.path.join(clone_dir, repo_name))
+            self.accept()
+            return
+        except git.exc.GitCommandError:
+            pass
+
+        # If cloning with the provided URL fails, ask the user what to do next
+        messageBox = QtWidgets.QMessageBox()
+        messageBox.setIcon(QtWidgets.QMessageBox.Question)
+        messageBox.setWindowTitle("Clone failed")
+        messageBox.setText("Cloning with the provided URL failed. What do you want to do next?")
+        messageBox.addButton(QtWidgets.QPushButton('Try with saved credentials'), QtWidgets.QMessageBox.YesRole)
+        messageBox.addButton(QtWidgets.QPushButton('Enter new credentials'), QtWidgets.QMessageBox.NoRole)
+        messageBox.addButton(QtWidgets.QPushButton('Cancel'), QtWidgets.QMessageBox.RejectRole)
+
+        result = messageBox.exec_()
+
+        if result == 0:  # Try with saved credentials
+            if not self.try_with_saved_credentials(url, clone_dir, repo_name):
+                self.enter_new_credentials(url, clone_dir, repo_name)
+        elif result == 1:  # Enter new credentials
+            self.enter_new_credentials(url, clone_dir, repo_name)
+        else:  # Cancel
+            self.reject()
+
+    def try_with_saved_credentials(self, url, clone_dir, repo_name):
+        if os.path.exists("credentials.txt"):
+            with open("credentials.txt", "r") as file:
+                credentials = [line.strip().split(",") for line in file.readlines()]
+                for id_, token in credentials:
+                    try:
+                        https_url = url[:8] + id_ + ':' + token + '@' + url[8:]
+                        git.Repo.clone_from(https_url, os.path.join(clone_dir, repo_name))
+                        QtWidgets.QMessageBox.information(self, "Cloned", f"Cloned with ID: {id_} and token: {token}")
+                        self.accept()
+                        return True
+                    except git.exc.GitCommandError:
+                        pass
+
+        QtWidgets.QMessageBox.critical(self, "Error", "Cloning failed with stored credentials.")
+        return False
+
+    def enter_new_credentials(self, url, clone_dir, repo_name):
+        credential_dialog = CredentialDialog(self)
+
+        if credential_dialog.exec_() == QtWidgets.QDialog.Accepted:
+            id_ = credential_dialog.id_input.text().strip()
+            token = credential_dialog.token_input.text().strip()
+
+            if id_ and token:
+                try:
+                    https_url = url[:8] + id_ + ':' + token + '@' + url[8:]
+                    git.Repo.clone_from(https_url, os.path.join(clone_dir, repo_name))
+                    with open("credentials.txt", "a") as file:
+                        file.write(f"{id_},{token}\n")
+                    self.accept()
+                except git.exc.GitCommandError as e:
+                    QtWidgets.QMessageBox.critical(self, "Error", f"Cloning failed with provided credentials: {str(e)}")
+            else:
+                QtWidgets.QMessageBox.critical(self, "Error",
+                                               "You need to provide both ID and token to clone a private repository.")
+
+        else:
+            self.reject()
+
+
+class CredentialDialog(QtWidgets.QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.id_input = QtWidgets.QLineEdit(self)
+        self.token_input = QtWidgets.QLineEdit(self)
+        self.confirm_button = QtWidgets.QPushButton('Confirm', self)
+        self.layout = QtWidgets.QVBoxLayout(self)
+        self.init_ui()
+
+    def init_ui(self):
         self.layout.addWidget(QtWidgets.QLabel('ID (only for private repository):', self))
         self.layout.addWidget(self.id_input)
 
         self.layout.addWidget(QtWidgets.QLabel('Token (only for private repository):', self))
         self.layout.addWidget(self.token_input)
 
-        self.confirm_button.clicked.connect(self.clone_repository)
+        self.confirm_button.clicked.connect(self.accept)
         self.layout.addWidget(self.confirm_button)
 
-    def clone_repository(self):
-        url = self.url_input.text().strip()
-        id_ = self.id_input.text().strip()
-        token = self.token_input.text().strip()
-
-        if not url:
-            QtWidgets.QMessageBox.warning(self, "Warning", "Repository URL is required.")
-            return
-
-        repo_name = url.split("/")[-1]
-        if ".git" in repo_name:
-            repo_name = repo_name.replace(".git", "")
-        clone_dir = self.filepath
-
-        try:
-            if id_ and token:
-
-                https_url = url[:8] + id_ + ':' + token + '@' + url[8:]
-                git.Repo.clone_from(https_url, os.path.join(clone_dir, repo_name), env={"GIT_ASKPASS": token})
-
-                with open(os.path.join(clone_dir, repo_name, "credentials.txt"), "w") as file:
-                    file.write(f"{id_}\n{token}")
-            else:
-                git.Repo.clone_from(url, os.path.join(clone_dir, repo_name))
-
-            self.accept()
-        except Exception as e:
-            QtWidgets.QMessageBox.critical(self, "Error", str(e))
-            self.reject()
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication([])
